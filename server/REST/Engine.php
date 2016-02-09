@@ -32,8 +32,6 @@ class Engine {
     private $_options = Array(
         "base_url" => "http://localhost/",
         "timezone" => "Europe/London",
-        "app_id" =
-        "api_key" => "",
     );
     
     /**
@@ -53,7 +51,7 @@ class Engine {
         
         ini_set("always_populate_raw_post_data", -1);
         ini_set("log_error", 1);
-        ini_set("error_log", __DIR__."/logs/php-"/*.time()*/.".log");
+        ini_set("error_log", __DIR__."/logs/php-".time().".log");
         date_default_timezone_set($this->_options["timezone"]);
         
         $this->_method = $this->_parse_method();
@@ -112,7 +110,7 @@ class Engine {
             // Log the error to the server logs.
             $response = Response::error("Server-side error");
             $log = "[".date("c")."] Exception: ".$e->getMessage()."\n".$e->getTraceAsString();
-            file_put_contents(__DIR__."/logs/rest-"./*time().*/".log", $log);
+            file_put_contents(__DIR__."/logs/rest-".time().".log", $log);
         }
         finally {
             $this->_respond($response);
