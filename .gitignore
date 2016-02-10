@@ -2,3 +2,4 @@
 /tests
 __*
 logs
+*.db
