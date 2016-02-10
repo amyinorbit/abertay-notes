@@ -51,7 +51,7 @@ class Engine {
         
         ini_set("always_populate_raw_post_data", -1);
         ini_set("log_error", 1);
-        ini_set("error_log", __DIR__."/logs/php-".time().".log");
+        ini_set("error_log", __DIR__."/logs/php-"/*.time()*/.".log");
         date_default_timezone_set($this->_options["timezone"]);
         
         $this->_method = $this->_parse_method();
@@ -110,7 +110,7 @@ class Engine {
             // Log the error to the server logs.
             $response = Response::error("Server-side error");
             $log = "[".date("c")."] Exception: ".$e->getMessage()."\n".$e->getTraceAsString();
-            file_put_contents(__DIR__."/logs/rest-".time().".log", $log);
+            file_put_contents(__DIR__."/logs/rest-"/*.time()*/.".log", $log);
         }
         finally {
             $this->_respond($response);
@@ -269,10 +269,10 @@ class Engine {
     private function _respond($response) {
         $data = $response->to_json()."\n";
         $response->set_header("Access-Control-Allow-Origin", "*");
-        $response->set_header("Access-Control-Allow-Headers", "X-Abertay-Auth");
         $response->set_header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
         $response->set_header("Content-Type", "application/json");
         $response->set_header("Content-Length", strlen(utf8_decode($data)));
+        $this->_send_headers($response);
         echo $data;
     }
     
