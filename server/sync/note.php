@@ -1,23 +1,24 @@
 <?php
 /**
- * Basic note model
+ * note.php - Note representation
+ * 
+ * @version     1.0a1
+ * @author      Cesar Parent <cesar@cesarparent.com>
+ * @package     sync
  */
-namespace CesarParent\Model;
+namespace sync;
 
-class Note {
-    public $title;
+class note {
     public $content;
     public $uuid;
     public $create_date;
     public $mod_date;
-    private $deleted;
     
     public static function from_array(array $data) {
-        $note = new Note;
+        $note = new note;
         foreach($data as $k => $v) {
             $note->{$k} = $v;
         }
-        $note->title = substr($note->content, 0, 127);
         return $note;
     }
 }

@@ -1,42 +1,27 @@
 <?php
 /**
  * Simple server script for a single-user note taking application
- * Calls function from Controller.php
+ * Calls functions from Controller.php
  */
-namespace CesarParent;
-require_once(__DIR__."/../REST/Engine.php");
-require_once(__DIR__."/../ViewModel.php");
-use CesarParent\REST;
-use CesarParent\ViewModel;
+require_once(__DIR__."/../loader.php");
 
-$app = new REST\Engine(__DIR__."/../config.json");
-$vm = new ViewModel\ViewModel($app);
+$router = new http\router;
 
-$app->route('GET', '/', function() use($app) {
-    return REST\Response::success(200);
+$router->onPost("/", function($req, $res) {
+    $engine = new sync\engine(__DIR__."/../config.json");
+    $engine->processRequest($req, $res);
+    $res->setHeader("Content-Type", "application/json");
+    $res->setBody(json_encode($res->body(), JSON_PRETTY_PRINT)."\n");
 });
 
-$app->route('GET', '/notes', function() use($vm) {
-    return $vm->get_notes();
-});
 
-$app->route('POST', '/notes', function() use($vm) {
-    return $vm->create_notes();
-});
-
-$app->route('GET', '/notes/([0-9]+)', function($id) use($vm) {
-    return $vm->get_note($id);
-});
-
-$app->route('PUT', '/notes/([0-9]+)', function($id) use($vm) {
-    return $vm->edit_note($id);
-});
-
-$app->route('DELETE', '/notes/([0-9]+)', function($id) use($vm) {
-    if(!$vm->authenticate()) {
-        return REST\Response::fail(401);
+(new http\server(function($req, $res) use($router) {
+    try {
+        $router->dispatch($req, $res);
     }
-    return $vm->delete_note($id);
-});
-
-$app->execute($_REQUEST['resource']);
+    catch(\Exception $e) {
+        $res->setStatusCode(500);
+        $res->setHeader("Content-Type", "text/plain");
+        $res->setBody($e->getMessage());
+    }
+}))->start();
