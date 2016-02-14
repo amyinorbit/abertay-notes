@@ -9,7 +9,7 @@
  */
 namespace http;
 
-class Request {
+class request {
     
     private $_method;
     private $_headers;
