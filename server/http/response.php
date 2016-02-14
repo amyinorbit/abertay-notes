@@ -9,7 +9,7 @@
 namespace http;
 
 
-class Response {
+class response {
     
     private $_headers;
     private $_body;

@@ -28,8 +28,8 @@ class server {
     
     public function __construct(callable $handler) {
         $this->_handler = $handler;
-        $this->_request = new Request();
-        $this->_response = new Response();
+        $this->_request = new request();
+        $this->_response = new response();
         
         $this->_filterOut = null;
     }
