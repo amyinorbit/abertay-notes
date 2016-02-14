@@ -11,18 +11,11 @@ namespace http;
 require_once(__DIR__."/request.php");
 require_once(__DIR__."/response.php");
 
-function createServer(callable $handler) {
-    return new server($handler);
-}
-
-
 class server {
     
     private $_request;
     private $_response;
-    
     private $_handler;
-    
     private $_filterOut;
     
     /**
