@@ -1,13 +1,20 @@
-CREATE TABLE note (
-	uniqueID            INTEGER UNIQUE NOT NULL PRIMARY KEY AUTOINCREMENT,
-	text                TEXT NOT NULL,
-    truncatedText       VARCHAR(128) NOT NULL,
-	createDate          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	modDate             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	deleted             INTEGER NOT NULL DEFAULT 0
+CREATE TABLE user (
+    uniqueID            INTEGER UNIQUE NOT NULL PRIMARY KEY AUTOINCREMENT,
+    email               TEXT NOT NULL UNIQUE,
+    salt                char(64) NOT NULL,
+    hash                CHAR(64) NOT NULL
 );
 
-CREATE TABLE user (
-    uniqueID            VARCHAR(128) UNIQUE NOT NULL PRIMARY KEY,
-    hash                CHAR(256) NOT NULL
+CREATE TABLE note (
+    uniqueID            char(36) NOT NULL,
+    userID              INTEGER NOT NULL,
+    text                TEXT NOT NULL,
+    createDate          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sortDate            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT note_pk PRIMARY KEY (uniqueID, userID),
+    CONSTRAINT note_user_fk FOREIGN KEY (userID) REFERENCES user(uniqueID)
+);
+
+CREATE TABLE deletedNote (
+    uniqueID            INTEGER UNIQUE NOT NULL PRIMARY KEY
 );

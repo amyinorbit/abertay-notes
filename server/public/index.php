@@ -3,14 +3,23 @@
  * Simple server script for a single-user note taking application
  * Calls functions from Controller.php
  */
-
 require_once(__DIR__."/../loader.php");
 
-error_reporting(E_ALL);
+$router = new http\router;
 
-(new http\server(function($req, $res) {
+$router->onGet("/", function($req, $res) {
     $res->setHeader("Content-Type", "text/plain");
-    $res->setStatusCode(200);
-    $res->send($req->query("test", -1)."\n");
-    $res->send("Hello\n");
+    $res->send("hello!\n");
+});
+
+
+(new http\server(function($req, $res) use($router) {
+    try {
+        $router->dispatch($req, $res);
+    }
+    catch(\Exception $e) {
+        $res->setStatusCode(500);
+        $res->setHeader("Content-Type", "text/plain");
+        $res->setBody($e->getMessage);
+    }
 }))->start();
