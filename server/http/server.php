@@ -23,10 +23,15 @@ class server {
     
     private $_handler;
     
+    private $_filterOut;
+    private $_filterIn;
+    
     public function __construct(callable $handler) {
         $this->_handler = $handler;
         $this->_request = new Request();
         $this->_response = new Response();
+        
+        $this->_filterOut = null;
     }
     
     public function start() {
@@ -34,7 +39,16 @@ class server {
         $this->_send();
     }
     
+    public function filterOut(callable $filter) {
+        $this->_filterOut = $filter;
+    }
+    
     private function _send() {
+        // apply a filter if there's one
+        if(is_callable($this->_filterOut)) {
+            call_user_func($this->_filterOut, $this->_response);
+        }
+        
         $body = $this->_response->body();
         $len = strlen(utf8_decode($body));
         header($this->_response->status());

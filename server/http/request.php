@@ -9,7 +9,6 @@
  */
 namespace http;
 
-
 class Request {
     
     private $_method;
@@ -41,10 +40,24 @@ class Request {
     }
     
     /**
+     * Returns the requested URL.
+     */
+    public function url() {
+        return $this->_url;
+    }
+    
+    /**
+     * Returns the request's body.
+     */
+    public function body() {
+        return $this->_body;
+    }
+    
+    /**
      * Returns the query string parameter value for a key, or the given default
      * value if the key isn't present.
      */
-    public function urlParam($key, $default = null) {
+    public function query($key, $default = null) {
         if(!isset($this->_params[$key])) {
             return $default;
         }
