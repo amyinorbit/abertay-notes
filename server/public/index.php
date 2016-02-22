@@ -4,27 +4,31 @@
  * Calls functions from Controller.php
  */
 require_once(__DIR__."/../loader.php");
-date_default_timezone_set("Europe/London");
+
+error_reporting(E_ALL);
 
 $router = new http\router;
 $auth = new controllers\auth;
-$sync = new controllers\sync;
 
 $router->OnPost("/notes", function($req, $res) {
+    if(!controllers\auth::Validate($req, $res)) { return; }
     
 });
 
 $router->OnPost("/deleted", function($req, $res) {
+    if(!controllers\auth::Validate($req, $res)) { return; }
     
 });
 
 $router->OnGet("/", function($req, $res) {
     $res->SetBody(["message" => "Installation Successful"]);
+    
 });
 
 
 $server = new http\server(function($req, $res) use($router) {
     try {
+        \app::Init(__DIR__."/../config.json");
         $router->Dispatch($req, $res);
     }
     catch(\Exception $e) {
@@ -37,7 +41,7 @@ $server = new http\server(function($req, $res) use($router) {
 $server->FilterOut(function($res) {
     $res->SetHeader("Content-Type", "application/json");
     $res->SetHeader("X-NetNotes-Time", strval(time()));
-    $res->SetBody(json_encode($res->Body(), JSON_PRETTY_PRINT)."\n");
+    $res->SetBody(json_encode($res->Body(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
 });
 
 $server->Start();

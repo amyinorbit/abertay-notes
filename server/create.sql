@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS user (
     uniqueID            INTEGER UNIQUE NOT NULL PRIMARY KEY AUTOINCREMENT,
     email               TEXT NOT NULL UNIQUE,
-    salt                char(64) NOT NULL,
+    salt                CHAR(64) NOT NULL,
     hash                CHAR(64) NOT NULL
 );
 
