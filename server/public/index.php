@@ -4,24 +4,40 @@
  * Calls functions from Controller.php
  */
 require_once(__DIR__."/../loader.php");
+date_default_timezone_set("Europe/London");
 
 $router = new http\router;
+$auth = new controllers\auth;
+$sync = new controllers\sync;
 
-$router->onPost("/", function($req, $res) {
-    $engine = new sync\engine(__DIR__."/../config.json");
-    $engine->processRequest($req, $res);
-    $res->setHeader("Content-Type", "application/json");
-    $res->setBody(json_encode($res->body(), JSON_PRETTY_PRINT)."\n");
+$router->OnPost("/notes", function($req, $res) {
+    
+});
+
+$router->OnPost("/deleted", function($req, $res) {
+    
+});
+
+$router->OnGet("/", function($req, $res) {
+    $res->SetBody(["message" => "Installation Successful"]);
 });
 
 
-(new http\server(function($req, $res) use($router) {
+$server = new http\server(function($req, $res) use($router) {
     try {
-        $router->dispatch($req, $res);
+        $router->Dispatch($req, $res);
     }
     catch(\Exception $e) {
-        $res->setStatusCode(500);
-        $res->setHeader("Content-Type", "text/plain");
-        $res->setBody($e->getMessage());
+        $res->SetStatusCode(500);
+        $res->SetBody(["error" => $e->getMessage()]);
     }
-}))->start();
+});
+
+// Encode every response as JSON
+$server->FilterOut(function($res) {
+    $res->SetHeader("Content-Type", "application/json");
+    $res->SetHeader("X-NetNotes-Time", strval(time()));
+    $res->SetBody(json_encode($res->Body(), JSON_PRETTY_PRINT)."\n");
+});
+
+$server->Start();
