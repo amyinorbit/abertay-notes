@@ -1,6 +1,5 @@
 <?php
 
-namespace model;
 class app {
     
     private static $conn;
