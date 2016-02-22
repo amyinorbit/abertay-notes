@@ -12,12 +12,12 @@ $auth = new controllers\auth;
 
 $router->OnPost("/notes", function($req, $res) {
     if(!controllers\auth::Validate($req, $res)) { return; }
-    
+    (new controllers\sync)->Update($req, $res);
 });
 
 $router->OnPost("/deleted", function($req, $res) {
     if(!controllers\auth::Validate($req, $res)) { return; }
-    
+    (new controllers\sync)->Delete($req, $res);
 });
 
 $router->OnGet("/", function($req, $res) {
@@ -41,7 +41,7 @@ $server = new http\server(function($req, $res) use($router) {
 $server->FilterOut(function($res) {
     $res->SetHeader("Content-Type", "application/json");
     $res->SetHeader("X-NetNotes-Time", strval(time()));
-    $res->SetBody(json_encode($res->Body(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
+    $res->SetBody(json_encode($res->Body(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 });
 
 $server->Start();
