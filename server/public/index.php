@@ -25,6 +25,10 @@ $router->OnGet("/", function($req, $res) {
     
 });
 
+$router->OnPost("/login", function($req, $res) {
+    $res->SetBody(["message" => "Login valid"]);
+});
+
 
 $server = new http\server(function($req, $res) use($router) {
     try {
@@ -40,7 +44,7 @@ $server = new http\server(function($req, $res) use($router) {
 // Encode every response as JSON
 $server->FilterOut(function($res) {
     $res->SetHeader("Content-Type", "application/json");
-    $res->SetHeader("X-NetNotes-Time", strval(time()));
+    $res->SetHeader("X-NetNotes-Time", (new DateTime())->format("Y-m-d\TH:i:sO"));
     $res->SetBody(json_encode($res->Body(), JSON_UNESCAPED_SLASHES));
 });
 

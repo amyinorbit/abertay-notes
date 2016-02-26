@@ -14,17 +14,28 @@ public class Note {
     private String  _text;
     private Date    _creationDate;
     private Date    _sortDate;
-    private UUID    _uniqueID;
+    private String  _uniqueID;
 
 
     public Note(String text) {
         _sortDate = new Date();
         _creationDate = new Date();
         _text = text;
-        _uniqueID = UUID.randomUUID();
+        _uniqueID = UUID.randomUUID().toString();
     }
 
-    public UUID uniqueID() {
+
+    public Note detachedCopy() {
+        Note copy = new Note(this._text);
+        copy._sortDate = (Date)_sortDate.clone();
+        copy._creationDate = (Date)_creationDate.clone();
+        copy._text = _text;
+        copy._uniqueID = _uniqueID;
+
+        return copy;
+    }
+
+    public String uniqueID() {
         return _uniqueID;
     }
 
