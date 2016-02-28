@@ -1,3 +1,0 @@
-[submodule "server/classes/http"]
-	path = server/classes/http
-	url = https://github.com/cesarparent/PHTTP.git
