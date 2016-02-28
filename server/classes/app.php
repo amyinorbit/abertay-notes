@@ -32,7 +32,10 @@ class app {
         
         // Set the timezone and open a database connection
         date_default_timezone_set(self::$options["app.timezone"]);
-        self::$conn = new \PDO("sqlite:".dirname($config)."/".self::$options["db.name"]);
+        $pdo = "mysql:host=".self::$options["db.server"].";dbname=".self::$options["db.name"];
+        self::$conn = new \PDO($pdo,
+                               self::$options["db.user"],
+                               self::$options["db.password"]);
     }
     
     /**

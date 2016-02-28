@@ -1,6 +1,9 @@
 {
     "app.url":      "http://localhost:8888",
     "app.timezone": "Europe/London",
-    "db.name":      "notes.db",
+    "db.server":    "127.0.0.1",
+    "db.name":      "notes",
+    "db.user":      "root",
+    "db.password":  "mysql",
     "auth.key":     "2C284143-5D28-4BCC-A8D9-EC3F68BE3289"
 }
