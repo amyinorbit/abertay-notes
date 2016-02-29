@@ -6,11 +6,13 @@ namespace controllers;
 
 class sync {
     
-    // TODO: Only replace if the new version is newer. Might require MySQL
     private static $insert = <<<EOT
-    INSERT OR REPLACE INTO `note`
+    INSERT INTO `note`
     (`userID`, `uniqueID`, `text`, `sortDate`, `createDate`)
-    VALUES (?, ?, ?, ?, ?);
+    VALUES (?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+    `sortDate` = IF(sortDate < VALUES(sortDate), VALUES(sortDate), sortDate),
+    `text` = IF(sortDate < VALUES(sortDate), VALUES(text), text);
 EOT;
 
     private static $selInsert = <<<EOT
