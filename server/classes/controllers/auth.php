@@ -23,7 +23,7 @@ class auth {
         }
         
         \app::SetUserID($user["uniqueID"]);
-        $hash = hash("sha256", $user["salt"].$password);
+        $hash = hash("sha256", $user["salt"].$password.$user["salt"]);
         
         if($hash !== $user["hash"]) {
             return self::_Unauthorized($res);
