@@ -14,9 +14,15 @@ class sync {
 EOT;
 
     private static $selInsert = <<<EOT
-    SELECT `uniqueID`, UNIX_TIMESTAMP(`createDate`), UNIX_TIMESTAMP(`sortDate`), `text`
+    SELECT
+        `uniqueID`,
+        UNIX_TIMESTAMP(`createDate`) AS createDate, 
+        UNIX_TIMESTAMP(`sortDate`) AS sotDate,
+        `text`
     FROM `note`
-    WHERE `userID` = :userID AND `sortDate` > :sortDate;
+    WHERE
+        `userID` = :userID AND
+        `sortDate` > :sortDate;
 EOT;
 
     private static $delete = <<<EOT
