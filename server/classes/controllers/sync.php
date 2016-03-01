@@ -2,8 +2,6 @@
 
 namespace controllers;
 
-
-
 class sync {
     
     private static $insert = <<<EOT
@@ -118,7 +116,4 @@ EOT;
         if(!is_array($note)) { return false; }
         
     }
-    
-    
-    
 }

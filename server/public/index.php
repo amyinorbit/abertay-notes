@@ -21,12 +21,24 @@ $router->OnPost("/deleted", function($req, $res) {
 });
 
 $router->OnGet("/", function($req, $res) {
-    $res->SetBody(["message" => "Installation Successful"]);
+    $res->SetBody([
+        "message" => "Installation Successful",
+        "app" => [
+            "version" => \app::GetOption("app.version", "1.0.0a"),
+            "url" => \app::GetOption("app.url", "")
+        ]
+    ]);
     
 });
 
 $router->OnPost("/login", function($req, $res) {
-    $res->SetBody(["message" => "Login valid"]);
+    if(!controlers\auth::Validate($req, $res)) {
+        $res->SetStatusCode(401);
+        $res->SetBody(["error" => "Invalid username or password."]);
+    } else {
+        $res->SetStatusCode(200);
+        $res->SetBody(["message" => "Valid credentials."]);
+    }
 });
 
 
