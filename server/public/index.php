@@ -32,7 +32,7 @@ $router->OnGet("/", function($req, $res) {
 });
 
 $router->OnPost("/login", function($req, $res) {
-    if(!controlers\auth::Validate($req, $res)) {
+    if(!controllers\auth::Validate($req, $res)) {
         $res->SetStatusCode(401);
         $res->SetBody(["error" => "Invalid username or password."]);
     } else {
