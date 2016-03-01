@@ -16,8 +16,8 @@ EOT;
     private static $selInsert = <<<EOT
     SELECT
         `uniqueID`,
-        UNIX_TIMESTAMP(`createDate`) AS createDate, 
-        UNIX_TIMESTAMP(`sortDate`) AS sotDate,
+        DATE_FORMAT(`createDate`, '%Y-%m-%d %T+0000') AS createDate,
+        DATE_FORMAT(`sortDate`, '%Y-%m-%d %T+0000') AS sortDate,
         `text`
     FROM `note`
     WHERE
