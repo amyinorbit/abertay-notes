@@ -3,3 +3,4 @@
 __*
 logs
 *.db
+config.json
