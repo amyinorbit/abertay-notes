@@ -1,5 +1,9 @@
 package com.cesarparent.netnotes.model;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -22,6 +26,13 @@ public class Note {
         _creationDate = new Date();
         _text = text;
         _uniqueID = UUID.randomUUID().toString();
+    }
+
+    public Note(JSONObject obj) throws JSONException {
+        _text = obj.getString("text");
+        //SimpleDateFormat=
+        _creationDate = new Date(obj.getString("createDate"));
+
     }
 
 

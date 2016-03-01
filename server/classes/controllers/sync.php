@@ -14,7 +14,7 @@ class sync {
 EOT;
 
     private static $selInsert = <<<EOT
-    SELECT `uniqueID`, `createDate`, `sortDate`, `text`
+    SELECT `uniqueID`, UNIX_TIMESTAMP(`createDate`), UNIX_TIMESTAMP(`sortDate`), `text`
     FROM `note`
     WHERE `userID` = :userID AND `sortDate` > :sortDate;
 EOT;
