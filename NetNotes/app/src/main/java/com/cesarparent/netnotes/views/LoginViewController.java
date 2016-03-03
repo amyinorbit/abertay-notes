@@ -8,10 +8,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import com.cesarparent.netnotes.R;
 
 public class LoginViewController extends AppCompatActivity {
+    
+    private ProgressBar _loginProgressIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,9 +24,10 @@ public class LoginViewController extends AppCompatActivity {
         setSupportActionBar(toolbar);
         
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        _loginProgressIndicator = (ProgressBar)findViewById(R.id.progressBar);
+        _loginProgressIndicator.setVisibility(ProgressBar.VISIBLE);
     }
-    
-    
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -38,5 +42,9 @@ public class LoginViewController extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
+    
+    
+    public void validateLoginInput(View sender) {
+        
+    }
 }

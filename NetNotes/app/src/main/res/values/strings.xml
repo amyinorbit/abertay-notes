@@ -5,6 +5,8 @@
     <string name="password">password</string>
     <string name="log_in">Log In</string>
     <string name="sync_log_in">Settings</string>
+    <string name="login_username">username</string>
+    <string name="login_password">password</string>
     <string name="title_activity_root_view_controller">Notes</string>
     <string name="title_activity_detail_view_controller">Edit</string>
     <string name="title_activity_login_view_controller">Sync Account</string>

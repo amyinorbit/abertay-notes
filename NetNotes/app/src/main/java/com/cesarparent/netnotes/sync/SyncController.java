@@ -33,6 +33,13 @@ import java.util.Date;
  *
  */
 public class SyncController {
+    
+    /// String contants for notifications
+    public static final String kLoggedInNotification =          "kLoggedInNotification";
+    public static final String kLoggedOutNotification =         "kLoggedOutNotification";
+    public static final String kLoginFailNotification =         "kLoginFailNotification";
+    public static final String kUpdateReceivedNotification =    "kUpdateReceivedNotification";
+    public static final String kDeleteReceivedNotification =    "kDeleteReceivedNotification";
 
     private static SyncController _instance = null;
     
@@ -61,7 +68,7 @@ public class SyncController {
     private SyncController() {
         // TODO: Check if there are credentials, and if there are try and login.
         _loggedIn = false;
-        _delegate = null;
+        _delegate = new WeakReference<SyncDelegate>(null);
     }
 
     /**
@@ -70,10 +77,6 @@ public class SyncController {
      */
     public void setDelegate(SyncDelegate delegate) {
         _delegate = new WeakReference<>(delegate);
-    }
-    
-    public void isLoggedIn() {
-        
     }
     
     /**

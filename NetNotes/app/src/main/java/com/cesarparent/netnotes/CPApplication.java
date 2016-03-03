@@ -3,6 +3,8 @@ package com.cesarparent.netnotes;
 import android.app.Application;
 import android.content.Context;
 
+import java.util.Locale;
+
 /**
  * Created by cesar on 01/03/2016.
  *
@@ -18,5 +20,13 @@ public class CPApplication extends Application {
 
     public static Context getContext() {
         return CPApplication._context;
+    }
+    
+    public static String string(int id) {
+        return _context.getString(id);
+    }
+    
+    public static Locale locale() {
+        return _context.getResources().getConfiguration().locale;
     }
 }

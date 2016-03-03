@@ -75,7 +75,7 @@ EOT;
         if(!$stmt->execute(["userID" => \app::UserID(), "sortDate" => $clientTime])) {
             throw new \Exception("Database Error");
         }
-        $res->SetBody($stmt->fetchAll(\PDO::FETCH_ASSOC));
+        $res->SetBody(["changes" => $stmt->fetchAll(\PDO::FETCH_ASSOC)]);
         $res->SetStatusCode(200);
     }
     
@@ -109,7 +109,7 @@ EOT;
         while($result = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             array_push($deleted, $result["uniqueID"]);
         }
-        $res->SetBody($deleted);
+        $res->SetBody(["changes" => $deleted]);
         $res->SetStatusCode(200);
     }
     

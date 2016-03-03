@@ -24,5 +24,16 @@
 
     <include layout="@layout/view_detail_contents" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/shareNoteFAB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@android:drawable/ic_menu_share"
+        android:onClick="shareNote"
+        android:nestedScrollingEnabled="false"
+        android:baselineAlignBottom="true"/>
+
 
 </android.support.design.widget.CoordinatorLayout>
