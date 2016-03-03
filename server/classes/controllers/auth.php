@@ -19,17 +19,16 @@ class auth {
         list($email, $token) = $parts;
         
         $stmt = \app::Connection()->prepare("SELECT * FROM `user` WHERE email = :email");
-        $stmt->execute(["email" => $userID]);
+        $stmt->execute(["email" => $email]);
         $user = $stmt->fetch(\PDO::FETCH_ASSOC);
         if(!$user) {
             return self::_Unauthorized($res);
         }
         
-        $apiKey = \app::GetOption("app.key");
-        $userHash = hash_hmac("sha256", $token, $apiKey);
-        $servHash = hash_hmac("sha256", $user->token, $apiKey);
+        $apiKey = \app::GetOption("auth.key");
+        $serverHash = hash_hmac("sha256", $user["token"], $apiKey);
         
-        if($userHash !== $servHash) {
+        if($token !== $serverHash) {
             return self::_Unauthorized($res);
         }
         \app::SetUserID($user["uniqueID"]);
