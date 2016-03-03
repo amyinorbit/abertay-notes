@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS note (
     userID              INTEGER NOT NULL,
     uniqueID            char(36) NOT NULL,
     text                TEXT NOT NULL,
-    createDate          TIMESTAMP NOT NULL,
-    sortDate            TIMESTAMP NOT NULL,
+    createDate          DATETIME NOT NULL,
+    sortDate            DATETIME NOT NULL,
     CONSTRAINT note_pk PRIMARY KEY (uniqueID),
     CONSTRAINT note_user_fk FOREIGN KEY (userID) REFERENCES user(uniqueID) ON DELETE CASCADE
 );
