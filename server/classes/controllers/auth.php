@@ -69,7 +69,7 @@ class auth {
             $stmt = \app::Connection()->prepare($sql);
             $stmt->execute(["token" => $token, "uniqueID" => $user["uniqueID"]]);
         } else {
-            $token = $user["uniqueID"];
+            $token = $user["token"];
         }
         return $token;
     }
