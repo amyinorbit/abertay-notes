@@ -2,7 +2,8 @@ CREATE TABLE IF NOT EXISTS user (
     uniqueID            INTEGER UNIQUE NOT NULL PRIMARY KEY AUTO_INCREMENT,
     email               VARCHAR(255) NOT NULL UNIQUE,
     salt                CHAR(64) NOT NULL,
-    hash                CHAR(64) NOT NULL
+    hash                CHAR(64) NOT NULL,
+    token               CHAR(128)
 );
 
 CREATE TABLE IF NOT EXISTS note (

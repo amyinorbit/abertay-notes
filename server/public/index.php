@@ -11,12 +11,12 @@ $router = new http\router;
 $auth = new controllers\auth;
 
 $router->OnPost("/notes", function($req, $res) {
-    if(!controllers\auth::Validate($req, $res)) { return; }
+    if(!controllers\auth::ValidateKey($req, $res)) { return; }
     (new controllers\sync)->Update($req, $res);
 });
 
 $router->OnPost("/deleted", function($req, $res) {
-    if(!controllers\auth::Validate($req, $res)) { return; }
+    if(!controllers\auth::ValidateKey($req, $res)) { return; }
     (new controllers\sync)->Delete($req, $res);
 });
 
@@ -32,12 +32,13 @@ $router->OnGet("/", function($req, $res) {
 });
 
 $router->OnPost("/login", function($req, $res) {
-    if(!controllers\auth::Validate($req, $res)) {
+    $token = controllers\auth::ValidatePassword($req, $res);
+    if($token === false) {
         $res->SetStatusCode(401);
         $res->SetBody(["error" => "Invalid username or password."]);
     } else {
         $res->SetStatusCode(200);
-        $res->SetBody(["message" => "Valid credentials."]);
+        $res->SetBody(["token" => $token]);
     }
 });
 

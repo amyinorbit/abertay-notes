@@ -11,7 +11,7 @@ class utils {
     /**
      * Returns a V4 UUID string.
      */
-    public static function uuid() {
+    public static function UUID() {
         return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
             mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
             mt_rand( 0, 0xffff ),
@@ -24,7 +24,7 @@ class utils {
     /**
      * Returns a random alphanumeric string of a given length.
      */
-    public static function randomString($length) {
+    public static function RandomString($length) {
         $valid_chars = "012345678ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         $str = "";
         foreach(range(0, $length-1) as $i) {
@@ -32,5 +32,4 @@ class utils {
         }
         return $str;
     }
-    
 }
