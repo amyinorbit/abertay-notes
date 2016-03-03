@@ -9,8 +9,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.cesarparent.netnotes.R;
+import com.cesarparent.netnotes.sync.SyncController;
+import com.cesarparent.utils.NotificationCenter;
 
 public class LoginViewController extends AppCompatActivity {
     
@@ -26,7 +29,14 @@ public class LoginViewController extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         _loginProgressIndicator = (ProgressBar)findViewById(R.id.progressBar);
-        _loginProgressIndicator.setVisibility(ProgressBar.VISIBLE);
+        _loginProgressIndicator.setVisibility(ProgressBar.INVISIBLE);
+
+        NotificationCenter.defaultCenter().addObserver(SyncController.kLoggedInNotification,
+                                                       this,
+                                                       "didLogin");
+        NotificationCenter.defaultCenter().addObserver(SyncController.kLoginFailNotification,
+                                                       this,
+                                                       "failedLogin");
     }
     
     @Override
@@ -45,6 +55,17 @@ public class LoginViewController extends AppCompatActivity {
     
     
     public void validateLoginInput(View sender) {
-        
+        _loginProgressIndicator.setVisibility(ProgressBar.VISIBLE);
+        new SyncController.LoginTask().execute();
+    }
+    
+    public void didLogin(Object notification) {
+        Toast.makeText(this, "Log In Successful", Toast.LENGTH_LONG).show();
+        _loginProgressIndicator.setVisibility(ProgressBar.INVISIBLE);
+    }
+    
+    public void failedLogin(Object notification) {
+        Toast.makeText(this, "Log In Failed", Toast.LENGTH_LONG).show();
+        _loginProgressIndicator.setVisibility(ProgressBar.INVISIBLE);
     }
 }

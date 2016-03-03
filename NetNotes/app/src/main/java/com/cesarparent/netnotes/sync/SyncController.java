@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Note;
+import com.cesarparent.utils.NotificationCenter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,11 +44,11 @@ public class SyncController {
 
     private static SyncController _instance = null;
     
-    private WeakReference   _delegate;
+    private WeakReference<SyncDelegate>     _delegate;
     
-    private boolean         _loggedIn;
+    private boolean                         _loggedIn;
     
-    private String          _username;
+    private String                          _username;
 
     /**
      * Get the shared Sync Controller singleton instance for the app.
@@ -68,7 +69,7 @@ public class SyncController {
     private SyncController() {
         // TODO: Check if there are credentials, and if there are try and login.
         _loggedIn = false;
-        _delegate = new WeakReference<SyncDelegate>(null);
+        _delegate = new WeakReference<>(null);
     }
 
     /**
@@ -79,6 +80,14 @@ public class SyncController {
         _delegate = new WeakReference<>(delegate);
     }
     
+    
+    public String getAuthorizationString() {
+        // TODO: Store password in keystore, get credentials from login screen.
+        String cred =   CPApplication.string(R.string.email) + ":"+
+                        CPApplication.string(R.string.password);
+        return "Basic "+ Base64.encodeToString(cred.getBytes(), Base64.DEFAULT);
+    }
+    
     /**
      * Post a new or update note to the server.
      * @param note  The note to send to the server.
@@ -86,7 +95,6 @@ public class SyncController {
     public void postNote(Note note) {
         if(!_loggedIn) { return; }
         // Get a note that can be used on other threads.
-        new PostNoteTask().execute(note.detachedCopy());
     }
 
     /**
@@ -99,81 +107,22 @@ public class SyncController {
     }
     
     
-    private class PostNoteTask extends AsyncTask<Note, Void, JSONArray> {
-        
-        private String _auth;
+    public static class LoginTask extends AsyncTask<Void, Void, APIResponse> {
         
         @Override
-        protected void onPreExecute() {
-            String username = CPApplication.getContext().getString(R.string.email);
-            String password = CPApplication.getContext().getString(R.string.password);
-            
-            String cred = username + ":" + password;
-            this._auth = "Basic "+ Base64.encodeToString(cred.getBytes(), Base64.DEFAULT);
+        protected APIResponse doInBackground(Void... params) {
+            APIRequest request = new APIRequest(APIRequest.ENDPOINT_LOGIN, "POST");
+            return request.send();
         }
         
-        
         @Override
-        protected JSONArray doInBackground(Note... params) {
-            
-            
-            try {
-                JSONArray body = new JSONArray();
-                for(Note note: params) {
-                    body.put(note.toJSON());
-                }
-                
-                URL url = new URL(CPApplication.getContext().getString(R.string.api_location)+"/notes");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-                conn.setUseCaches(false);
-                conn.setChunkedStreamingMode(0);
-                conn.setRequestMethod("POST");
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZZZ");
-                conn.setRequestProperty("X-NetNotes-Time", format.format(new Date()));
-                conn.setRequestProperty("Authorization", _auth);
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                
-                
-                // Write the body
-                OutputStream os = conn.getOutputStream();
-                os.write(body.toString().getBytes("UTF-8"));
-                os.close();
-                
-                
-                conn.connect();
-                Log.d("API CONNECTION", body.toString());
-                Log.d("API CONNECTION", "Status: " + conn.getResponseCode());
-                Log.d("API CONNECTION", "Auth: "+this._auth);
-                
-                // now we read
-                BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String json = "", line = "";
-                
-                while((line = r.readLine()) != null) {
-                    json += line + "\n";
-                }
-                JSONArray obj = new JSONArray(json);
-                Log.d("Network Manager", obj.toString());
-                return new JSONArray(json);
+        protected void onPostExecute(APIResponse response) {
+            if(response.getStatus() == APIResponse.SUCCESS) {
+                NotificationCenter.defaultCenter().postNotification(kLoggedInNotification, null);
+            } else {
+                NotificationCenter.defaultCenter().postNotification(kLoggedOutNotification, null);
             }
-            catch(MalformedURLException e) {
-
-            }
-            catch(Exception e) {
-                Log.e("Network Manager", "YOU EFFIN DUN GOOFED:\n"+e.getMessage());
-                e.printStackTrace();
-            }
-
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(JSONArray obj) {
-            Toast.makeText(CPApplication.getContext(), "RECEIVED!", Toast.LENGTH_LONG).show();
+            Log.d("LoginTask", "Login status: "+response.getStatus());
         }
     }
 }

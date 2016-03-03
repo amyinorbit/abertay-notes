@@ -41,6 +41,8 @@ public class APIRequest {
             _connection.setChunkedStreamingMode(0);
             _connection.setRequestProperty("X-NetNotes-Time", Utils.JSONDate(new Date()));
             _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            _connection.setRequestProperty("Authorization",
+                                           SyncController.sharedInstance().getAuthorizationString());
         }
         catch(Exception e) {
             System.exit(2);
@@ -75,11 +77,27 @@ public class APIRequest {
         BufferedReader reader = null;
         try {
             _connection.connect();
+            int code = _connection.getResponseCode();
             
-            reader = new BufferedReader(new InputStreamReader(_connection.getInputStream()));
+            if(code == 400 || code == 200) {
+                String line, json = "";
+                reader = new BufferedReader(new InputStreamReader(_connection.getInputStream()));
+                while((line = reader.readLine()) != null) {
+                    json += line + "\n";
+                }
+                Log.d("APIRequest", "Payload: "+json);
+                return new APIResponse(json, code);
+            }
+            else if(code == 401) {
+                return new APIResponse(APIResponse.UNAUTHORIZED);
+            }
+            else if(code > 500) {
+                return new APIResponse(APIResponse.SERVER_ERROR);
+            }
+            
         }
         catch(IOException e) {
-            
+            return new APIResponse(APIResponse.CONNECTION_ERROR);
         }
         finally {
             if(_connection != null) { _connection.disconnect(); }
@@ -90,9 +108,7 @@ public class APIRequest {
                 Log.e("APIRequest", "Error closing an output buffer: "+e.getMessage());
             }
         }
-        
-        
-        return new APIResponse(APIResponse.DATA_ERROR);
+        return new APIResponse(APIResponse.INVALID_STATUS);
     }
     
 }
