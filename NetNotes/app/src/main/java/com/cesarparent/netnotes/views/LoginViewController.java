@@ -56,7 +56,6 @@ public class LoginViewController extends AppCompatActivity {
     
     public void validateLoginInput(View sender) {
         _loginProgressIndicator.setVisibility(ProgressBar.VISIBLE);
-        new SyncController.LoginTask().execute();
     }
     
     public void didLogin(Object notification) {

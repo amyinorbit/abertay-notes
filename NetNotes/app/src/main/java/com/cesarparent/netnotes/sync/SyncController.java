@@ -42,7 +42,7 @@ public class SyncController {
     public static final String kUpdateReceivedNotification =    "kUpdateReceivedNotification";
     public static final String kDeleteReceivedNotification =    "kDeleteReceivedNotification";
     
-    private static final int API_KEY = "";
+    private static final String API_KEY = "C162E35C-638C-478A-8A57-F89FA72B9AA6";
 
     private static SyncController _instance = null;
     
@@ -109,7 +109,14 @@ public class SyncController {
     }
     
     
+    /*
     public static class LoginTask extends AsyncTask<Void, Void, APIResponse> {
+        
+        private APITaskDelegate _delegate;
+        
+        public LoginTask(String email, String password, APITaskDelegate delegate) {
+            _delegate = delegate;
+        }
         
         @Override
         protected APIResponse doInBackground(Void... params) {
@@ -119,12 +126,14 @@ public class SyncController {
         
         @Override
         protected void onPostExecute(APIResponse response) {
+            
             if(response.getStatus() == APIResponse.SUCCESS) {
                 NotificationCenter.defaultCenter().postNotification(kLoggedInNotification, null);
             } else {
                 NotificationCenter.defaultCenter().postNotification(kLoggedOutNotification, null);
             }
+            _delegate.didReceiveResponse(response);
             Log.d("LoginTask", "Login status: "+response.getStatus());
         }
-    }
+    }*/
 }

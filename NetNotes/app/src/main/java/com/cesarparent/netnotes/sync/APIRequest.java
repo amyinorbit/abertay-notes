@@ -41,8 +41,6 @@ public class APIRequest {
             _connection.setChunkedStreamingMode(0);
             _connection.setRequestProperty("X-NetNotes-Time", Utils.JSONDate(new Date()));
             _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            _connection.setRequestProperty("Authorization",
-                                           SyncController.sharedInstance().getAuthorizationString());
         }
         catch(Exception e) {
             System.exit(2);
@@ -51,6 +49,10 @@ public class APIRequest {
     
     public APIRequest(String endpoint) {
         this(endpoint, "POST");
+    }
+    
+    public void setAuthtorization(String token) {
+        _connection.setRequestProperty("Authorization", token);
     }
     
     public void putData(JSONArray body) {

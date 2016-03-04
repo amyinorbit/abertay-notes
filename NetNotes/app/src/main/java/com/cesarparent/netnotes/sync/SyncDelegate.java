@@ -7,8 +7,6 @@ package com.cesarparent.netnotes.sync;
  */
 public interface SyncDelegate {
 
-    public void shouldLogin();
-
     public void didLogin();
 
     public void didReceiveUpdates();

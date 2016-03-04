@@ -2,6 +2,7 @@ package com.cesarparent.netnotes;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import java.util.Locale;
 

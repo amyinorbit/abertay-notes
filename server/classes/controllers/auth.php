@@ -22,7 +22,7 @@ class auth {
         }
         
         $apiKey = \app::GetOption("auth.key");
-        $serverHash = hash_hmac("sha256", $user["token"], $apiKey);
+        $serverHash = base64_encode(hash_hmac("sha256", $user["token"], $apiKey, true));
         
         if($token !== $serverHash) {
             return self::_Unauthorized($res);
