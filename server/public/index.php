@@ -31,6 +31,12 @@ $router->OnGet("/", function($req, $res) {
     
 });
 
+$router->OnGet("/login", function($req, $res) {
+    if(!controllers\auth::ValidateKey($req, $res)) { return; }
+    $res->SetStatusCode(200);
+    $res->SetBody(["message" => "Token Authentication Successful"]);
+});
+
 $router->OnPost("/login", function($req, $res) {
     $token = controllers\auth::ValidatePassword($req, $res);
     if($token === false) {

@@ -3,10 +3,6 @@
 namespace controllers;
 class auth {
     
-    public static function GetToken($req, $res) {
-        
-    }
-    
     public static function ValidateKey($req, $res) {
         $token = $req->Header("Authorization");
         if(is_null($token)) {

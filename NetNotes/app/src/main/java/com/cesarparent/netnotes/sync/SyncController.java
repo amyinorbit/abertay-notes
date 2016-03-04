@@ -41,6 +41,8 @@ public class SyncController {
     public static final String kLoginFailNotification =         "kLoginFailNotification";
     public static final String kUpdateReceivedNotification =    "kUpdateReceivedNotification";
     public static final String kDeleteReceivedNotification =    "kDeleteReceivedNotification";
+    
+    private static final int API_KEY = "";
 
     private static SyncController _instance = null;
     
