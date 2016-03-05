@@ -32,4 +32,14 @@ class utils {
         }
         return $str;
     }
+    
+    /**
+     * Returns a properly-formatted time
+     */
+    public static function Date($time = null) {
+        if(!is_int($time)) {
+            $time = time();
+        }
+        return date("Y-m-d H:i:sO", $time);
+    }
 }

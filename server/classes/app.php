@@ -9,6 +9,7 @@
 
 class app {
     
+    private static $pushToken = null;
     private static $userID = null;
     private static $conn = null;
     private static $options = [
@@ -48,12 +49,32 @@ class app {
         return self::$options[$key];
     }
     
+    /**
+     * Registers the current user's ID with the app.
+     */
     public static function SetUserID($userID) {
         self::$userID = $userID;
     }
     
+    /**
+     * Registers a Push Notification token with the app.
+     */
+    public static function SetPushToken($token) {
+        self::$pushToken = $token;
+    }
+    
+    /**
+     * Returns the current user's ID if there is one registered, or null
+     */
     public static function UserID() {
         return self::$userID;
+    }
+    
+    /**
+     * Returns the current Push Notifications Token if there is one registered, or null
+     */
+    public static function PushToken() {
+        return self::$pushToken;
     }
     
     /**

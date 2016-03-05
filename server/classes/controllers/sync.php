@@ -46,6 +46,10 @@ EOT;
         
     }
     
+    /**
+     * Process an update request, and returns the changes that have occurred since the sync
+     * time sent with the request.
+     */
     public function Update($req, $res) {
         $db = \app::Connection();
         
@@ -79,7 +83,10 @@ EOT;
         $res->SetStatusCode(200);
     }
     
-    
+    /**
+     * Process an delete request, and returns the deletions that have occurred since the sync
+     * time sent with the request.
+     */
     public function Delete($req, $res) {
         $db = \app::Connection();
         

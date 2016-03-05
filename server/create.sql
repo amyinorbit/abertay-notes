@@ -6,6 +6,15 @@ CREATE TABLE IF NOT EXISTS user (
     token               CHAR(128)
 );
 
+CREATE TABLE IF NOT EXISTS token (
+    userID              INTEGER NOT NULL,
+    deviceID            CHAR(32) NOT NULL,
+    token               CHAR(128) NOT NULL,
+    pushToken           TEXT,
+    CONSTRAINT token_pk PRIMARY KEY(userID, deviceID),
+    CONSTRAINT token_user_fk FOREIGN KEY (userID) REFERENCES user(uniqueID) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS note (
     userID              INTEGER NOT NULL,
     uniqueID            char(36) NOT NULL,
