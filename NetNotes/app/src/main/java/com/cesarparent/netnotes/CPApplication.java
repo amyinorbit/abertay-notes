@@ -30,4 +30,8 @@ public class CPApplication extends Application {
     public static Locale locale() {
         return _context.getResources().getConfiguration().locale;
     }
+    
+    public static SharedPreferences getSharedPreferences() {
+        return _context.getSharedPreferences("com.cesarparent.NetNotes", Context.MODE_PRIVATE);
+    }
 }

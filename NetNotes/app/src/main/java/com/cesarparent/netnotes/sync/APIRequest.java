@@ -4,13 +4,14 @@ import android.util.Log;
 
 import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.R;
-import com.cesarparent.netnotes.views.Utils;
+import com.cesarparent.utils.Utils;
 
 import org.json.JSONArray;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -34,13 +35,13 @@ public class APIRequest {
         try {
             URL url = new URL(CPApplication.string(R.string.api_location)+endpoint);
             _connection = (HttpURLConnection)url.openConnection();
-            _connection.setDoOutput(true);
+            _connection.setDoOutput(false);
             _connection.setDoInput(true);
             _connection.setUseCaches(false);
             _connection.setRequestMethod(method);
-            _connection.setChunkedStreamingMode(0);
+            _connection.setFixedLengthStreamingMode(0);
             _connection.setRequestProperty("X-NetNotes-Time", Utils.JSONDate(new Date()));
-            _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            _connection.setRequestProperty("Content-Length", "0");
         }
         catch(Exception e) {
             System.exit(2);
@@ -56,10 +57,15 @@ public class APIRequest {
     }
     
     public void putData(JSONArray body) {
+        _connection.setDoOutput(true);
+        byte[] bytes = body.toString().getBytes();
+        _connection.setFixedLengthStreamingMode(bytes.length);
+        _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        
         OutputStream os = null;
         try {
             os = new BufferedOutputStream(_connection.getOutputStream());
-            os.write(body.toString().getBytes("UTF-8"));
+            os.write(bytes);
         }
         catch(IOException e) {
             Log.e("APIRequest", "Error writing request body: "+e.getMessage());
@@ -75,19 +81,18 @@ public class APIRequest {
     }
     
     public APIResponse send() {
-
         BufferedReader reader = null;
         try {
             _connection.connect();
             int code = _connection.getResponseCode();
-            
+            Log.d("APIRequest", "Received response with code: "+code);
             if(code == 400 || code == 200) {
                 String line, json = "";
-                reader = new BufferedReader(new InputStreamReader(_connection.getInputStream()));
+                InputStream is = code == 200 ? _connection.getInputStream() : _connection.getErrorStream();
+                reader = new BufferedReader(new InputStreamReader(is));
                 while((line = reader.readLine()) != null) {
                     json += line + "\n";
                 }
-                Log.d("APIRequest", "Payload: "+json);
                 return new APIResponse(json, code);
             }
             else if(code == 401) {
@@ -99,6 +104,7 @@ public class APIRequest {
             
         }
         catch(IOException e) {
+            Log.e("APIRequest", "Connection Error: "+e.getMessage());
             return new APIResponse(APIResponse.CONNECTION_ERROR);
         }
         finally {

@@ -14,6 +14,7 @@
         <activity
             android:launchMode="singleTop"
             android:name=".views.RootViewController"
+            android:windowSoftInputMode="adjustResize"
             android:label="@string/title_activity_root_view_controller"
             android:theme="@style/AppTheme">
             <intent-filter>
@@ -23,6 +24,7 @@
         </activity>
         <activity
             android:name=".views.DetailViewController"
+            android:windowSoftInputMode="adjustResize"
             android:label="@string/title_activity_detail_view_controller"
             android:parentActivityName=".views.RootViewController"
             android:theme="@style/AppTheme">
@@ -34,6 +36,7 @@
         </activity>
         <activity
             android:name=".views.LoginViewController"
+            android:windowSoftInputMode="adjustResize"
             android:label="@string/title_activity_login_view_controller"
             android:parentActivityName=".views.RootViewController"
             android:theme="@style/AppTheme">

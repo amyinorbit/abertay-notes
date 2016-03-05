@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.cesarparent.netnotes.views.DetailViewController">
+    tools:context="com.cesarparent.netnotes.views.LoginViewController">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -22,7 +22,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/view_detail_contents" />
-
+    <include layout="@layout/view_logged_in_contents"/>
 
 </android.support.design.widget.CoordinatorLayout>

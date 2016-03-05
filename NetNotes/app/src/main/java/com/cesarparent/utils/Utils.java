@@ -1,7 +1,10 @@
-package com.cesarparent.netnotes.views;
+package com.cesarparent.utils;
 
+import android.app.Activity;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import com.cesarparent.netnotes.CPApplication;
 
@@ -52,7 +55,14 @@ public class Utils {
             Log.e("HMAC", "Error Creating Token: "+ e.getMessage());
             return "";
         }
-        
+    }
+
+    public static void hideSoftKeyboard(Activity activity) {
+        InputMethodManager inputMethodManager = (InputMethodManager)activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        View focus = activity.getCurrentFocus();
+        if(focus != null) {
+            inputMethodManager.hideSoftInputFromWindow(focus.getWindowToken(), 0);
+        }
         
     }
     

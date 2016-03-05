@@ -5,14 +5,18 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import com.cesarparent.netnotes.R;
+import com.cesarparent.netnotes.model.Note;
 
 public class DetailViewController extends AppCompatActivity {
     
     private EditText _noteTextView;
+    
+    Note _currentNote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +40,14 @@ public class DetailViewController extends AppCompatActivity {
         if(data == null) { return; }
         _noteTextView.setText(data);
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.detail_menu, menu);
+        return true;
+    }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -45,6 +57,10 @@ public class DetailViewController extends AppCompatActivity {
                 NavUtils.navigateUpFromSameTask(this);
                 finish();
                 break;
+            
+            case R.id.action_share:
+                shareNote(item);
+                break;
 
             default:
                 break;
@@ -52,7 +68,7 @@ public class DetailViewController extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
     
-    public void shareNote(View sender) {
+    public void shareNote(MenuItem sender) {
         Intent share = new Intent(Intent.ACTION_SEND);
         share.setType("text/plain");
         share.putExtra(Intent.EXTRA_TEXT, _noteTextView.getText().toString());

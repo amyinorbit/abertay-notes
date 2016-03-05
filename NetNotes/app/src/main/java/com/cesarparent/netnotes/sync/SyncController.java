@@ -1,5 +1,6 @@
 package com.cesarparent.netnotes.sync;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
@@ -45,12 +46,7 @@ public class SyncController {
     private static final String API_KEY = "C162E35C-638C-478A-8A57-F89FA72B9AA6";
 
     private static SyncController _instance = null;
-    
-    private WeakReference<SyncDelegate>     _delegate;
-    
-    private boolean                         _loggedIn;
-    
-    private String                          _username;
+    private Authenticator                   _authenticator;
 
     /**
      * Get the shared Sync Controller singleton instance for the app.
@@ -69,25 +65,16 @@ public class SyncController {
      * if yes check that they are still valid.
      */
     private SyncController() {
-        // TODO: Check if there are credentials, and if there are try and login.
-        _loggedIn = false;
-        _delegate = new WeakReference<>(null);
-    }
-
-    /**
-     * Sets the sync controller's delegate. The delegate wil be notified of sync events.
-     * @param delegate  The controller's delegate.
-     */
-    public void setDelegate(SyncDelegate delegate) {
-        _delegate = new WeakReference<>(delegate);
+        _authenticator = new Authenticator();
     }
     
+    public Authenticator getAuthenticator() {
+        return _authenticator;
+    }
     
-    public String getAuthorizationString() {
-        // TODO: Store password in keystore, get credentials from login screen.
-        String cred =   CPApplication.string(R.string.email) + ":"+
-                        CPApplication.string(R.string.password);
-        return "Basic "+ Base64.encodeToString(cred.getBytes(), Base64.DEFAULT);
+    public void logIn(String email, String password, APITaskDelegate delegate) {
+        APILoginTask task = new APILoginTask(delegate);
+        task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, email, password);
     }
     
     /**
@@ -95,7 +82,7 @@ public class SyncController {
      * @param note  The note to send to the server.
      */
     public void postNote(Note note) {
-        if(!_loggedIn) { return; }
+        if(!_authenticator.isLoggedIn()) { return; }
         // Get a note that can be used on other threads.
     }
 
@@ -104,36 +91,7 @@ public class SyncController {
      * @param note  The note to delete from the server.
      */
     public void deleteNote(Note note) {
-        if(!_loggedIn) { return; }
+        if(!_authenticator.isLoggedIn()) { return; }
         String uuid = note.uniqueID();
     }
-    
-    
-    /*
-    public static class LoginTask extends AsyncTask<Void, Void, APIResponse> {
-        
-        private APITaskDelegate _delegate;
-        
-        public LoginTask(String email, String password, APITaskDelegate delegate) {
-            _delegate = delegate;
-        }
-        
-        @Override
-        protected APIResponse doInBackground(Void... params) {
-            APIRequest request = new APIRequest(APIRequest.ENDPOINT_LOGIN, "POST");
-            return request.send();
-        }
-        
-        @Override
-        protected void onPostExecute(APIResponse response) {
-            
-            if(response.getStatus() == APIResponse.SUCCESS) {
-                NotificationCenter.defaultCenter().postNotification(kLoggedInNotification, null);
-            } else {
-                NotificationCenter.defaultCenter().postNotification(kLoggedOutNotification, null);
-            }
-            _delegate.didReceiveResponse(response);
-            Log.d("LoginTask", "Login status: "+response.getStatus());
-        }
-    }*/
 }

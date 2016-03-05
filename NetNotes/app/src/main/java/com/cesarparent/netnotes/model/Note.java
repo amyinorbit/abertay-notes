@@ -18,6 +18,8 @@ import java.util.UUID;
  * with the server.
  */
 public class Note {
+    
+    //public static final String 
 
     private String  _text;
     private Date    _creationDate;

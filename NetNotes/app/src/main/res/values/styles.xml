@@ -9,7 +9,16 @@
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
-
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+    
+    <style name="dangerButton" parent="ThemeOverlay.AppCompat.Dark">
+        <item name="android:colorControlHighlight">@color/colorDangerAccent</item>
+        <item name="android:colorButtonNormal">@color/colorDanger</item>
+    </style>
+
+    <style name="validButton" parent="ThemeOverlay.AppCompat.Dark">
+        <item name="android:colorControlHighlight">@color/colorPrimaryDark</item>
+        <item name="android:colorButtonNormal">@color/colorPrimary</item>
+    </style>
 
 </resources>

@@ -4,9 +4,19 @@
     <string name="email">cesar@cesarparent.com</string>
     <string name="password">password</string>
     <string name="log_in">Log In</string>
+    <string name="log_out">Log Out</string>
     <string name="sync_log_in">Settings</string>
-    <string name="login_username">username</string>
+    
+    <string name="logged_in">logged in as</string>
+    <string name="login_username">email</string>
     <string name="login_password">password</string>
+    
+    <string name="loginmsg_failed">Invalid Credentials</string>
+    <string name="loginmsg_success">Logged In</string>
+    
+    <string name="action_share">Share</string>
+    <string name="action_delete">Delete</string>
+    
     <string name="title_activity_root_view_controller">Notes</string>
     <string name="title_activity_detail_view_controller">Edit</string>
     <string name="title_activity_login_view_controller">Sync Account</string>

@@ -3,6 +3,6 @@
     <item
         android:id="@+id/action_settings"
         android:title="@string/sync_log_in"
+        android:icon="@drawable/ic_cloud_queue_white_24dp"
         app:showAsAction="ifRoom" />
-
 </menu>
