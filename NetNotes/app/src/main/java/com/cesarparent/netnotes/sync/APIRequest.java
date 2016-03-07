@@ -41,6 +41,7 @@ public class APIRequest {
             _connection.setRequestMethod(method);
             _connection.setFixedLengthStreamingMode(0);
             _connection.setRequestProperty("X-NetNotes-Time", Utils.JSONDate(new Date()));
+            _connection.setRequestProperty("X-NetNotes-DeviceID", CPApplication.getDeviceID());
             _connection.setRequestProperty("Content-Length", "0");
         }
         catch(Exception e) {

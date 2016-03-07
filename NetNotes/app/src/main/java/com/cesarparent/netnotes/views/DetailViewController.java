@@ -5,18 +5,28 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+
 import com.cesarparent.netnotes.R;
+import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.Note;
 
 public class DetailViewController extends AppCompatActivity {
     
+    public static final String ACTION_CREATE = "com.cesarparent.netnotes.action.CREATE";
+    public static final String ACTION_EDIT = "com.cesarparent.netnotes.action.EDIT";
+    
+    public static final String EXTRA_UUID = "com.cesarparent.netnotes.extra.UUID";
+    
     private EditText _noteTextView;
     
-    Note _currentNote;
+    Note _currentNote = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,18 +37,48 @@ public class DetailViewController extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         
         _noteTextView = (EditText) findViewById(R.id.noteTextView);
+        _noteTextView.setImeActionLabel(getString(R.string.action_save), KeyEvent.KEYCODE_ENTER);
         
         processIntent(getIntent());
         
     }
     
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(_currentNote != null) {
+            _currentNote.setText(_noteTextView.getText().toString());
+            if(_currentNote.text().isEmpty()) { return; }
+            Model.sharedInstance().addNote(_currentNote);
+        }
+    }
+    
     private void processIntent(Intent i) {
         if(i == null) { return; }
-        if(i.getType() == null) { return; }
-        if(!i.getType().contains("text/plain")) { return; }
-        String data = i.getStringExtra(Intent.EXTRA_TEXT);
-        if(data == null) { return; }
-        _noteTextView.setText(data);
+        if(i.getAction() == null) { return; }
+        switch (i.getAction()) {
+            case Intent.ACTION_SEND:
+                if(i.getType() == null) { return; }
+                if(!i.getType().contains("text/plain")) { return; }
+                String data = i.getStringExtra(Intent.EXTRA_TEXT);
+                if(data == null) { return; }
+                _currentNote = new Note(data);
+                break;
+            
+            case ACTION_CREATE:
+                _currentNote = new Note("");
+                break;
+            
+            case ACTION_EDIT:
+                String uuid = i.getStringExtra(EXTRA_UUID);
+                if(uuid == null) { return; }
+                _currentNote = Model.sharedInstance().getNoteWithUniqueID(uuid);
+                break;
+        }
+        
+        if(_currentNote != null) {
+            _noteTextView.setText(_currentNote.text());
+        }
     }
 
 
@@ -60,6 +100,12 @@ public class DetailViewController extends AppCompatActivity {
             
             case R.id.action_share:
                 shareNote(item);
+                break;
+            
+            case R.id.action_delete:
+                Model.sharedInstance().deleteNoteWithUniqueID(_currentNote.uniqueID());
+                NavUtils.navigateUpFromSameTask(this);
+                _currentNote = null;
                 break;
 
             default:

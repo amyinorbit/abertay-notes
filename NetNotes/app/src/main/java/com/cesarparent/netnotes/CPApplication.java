@@ -3,6 +3,8 @@ package com.cesarparent.netnotes;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.provider.Settings;
+import android.util.Log;
 
 import java.util.Locale;
 
@@ -13,6 +15,7 @@ import java.util.Locale;
  */
 public class CPApplication extends Application {
     private static Context _context;
+    private static String _deviceID = null;
 
     public void onCreate() {
         super.onCreate();
@@ -26,6 +29,13 @@ public class CPApplication extends Application {
     public static String string(int id) {
         return _context.getString(id);
     }
+    
+    public static String getDeviceID() {
+        String android_id = Settings.Secure.getString(getContext().getContentResolver(),
+                                                      Settings.Secure.ANDROID_ID);
+        return android_id+android_id;
+    }
+    
     
     public static Locale locale() {
         return _context.getResources().getConfiguration().locale;

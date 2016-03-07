@@ -1,23 +1,25 @@
 <resources>
     <string name="app_name">NetNotes</string>
     <string name="api_location">http://188.166.147.237</string>
-    <string name="email">cesar@cesarparent.com</string>
-    <string name="password">password</string>
-    <string name="log_in">Log In</string>
-    <string name="log_out">Log Out</string>
     <string name="sync_log_in">Settings</string>
     
     <string name="logged_in">logged in as</string>
-    <string name="login_username">email</string>
-    <string name="login_password">password</string>
     
     <string name="loginmsg_failed">Invalid Credentials</string>
     <string name="loginmsg_success">Logged In</string>
     
+    <string name="action_settings">Settings</string>
     <string name="action_share">Share</string>
     <string name="action_delete">Delete</string>
+    <string name="action_save">Save</string>
+    <string name="action_login">Log In</string>
+    <string name="action_logout">Log Out</string>
+    
+    <string name="hint_email">email</string>
+    <string name="hint_password">password</string>
+    <string name="hint_new_note">Compose note…</string>
     
     <string name="title_activity_root_view_controller">Notes</string>
-    <string name="title_activity_detail_view_controller">Edit</string>
+    <string name="title_activity_detail_view_controller">Edit Note</string>
     <string name="title_activity_login_view_controller">Sync Account</string>
 </resources>

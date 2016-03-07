@@ -10,10 +10,20 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 
 import com.cesarparent.netnotes.R;
+import com.cesarparent.netnotes.model.Model;
+import com.cesarparent.netnotes.model.NotesAdapter;
+import com.cesarparent.utils.Notification;
+import com.cesarparent.utils.NotificationCenter;
 
 public class RootViewController extends AppCompatActivity {
+    
+    private NotesAdapter _adapter;
+    private ListView _noteListView;
+    private Model _model;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +31,40 @@ public class RootViewController extends AppCompatActivity {
         setContentView(R.layout.view_root);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        
+        _noteListView = (ListView)findViewById(R.id.notesListView);
+        _adapter = new NotesAdapter(this, Model.sharedInstance());
+        _noteListView.setAdapter(_adapter);
+        
+        _noteListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                openNote(position);
+            }
+        });
+        
+        _noteListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                deleteNote(position);
+                return true;
+            }
+        });
+    }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        NotificationCenter.defaultCenter().addObserver(Notification.MODEL_UPDATE,
+                                                       this,
+                                                       "onModelChange");
+        _adapter.notifyDataSetChanged();
+    }
+    
+    @Override
+    public void onPause() {
+        super.onPause();
+        NotificationCenter.defaultCenter().removeObserver(this);
     }
     
     @Override
@@ -47,8 +91,26 @@ public class RootViewController extends AppCompatActivity {
     }
     
     public void startCreateNote(View sender) {
-        Intent create = new Intent(this, DetailViewController.class);
-        startActivity(create);
+        Intent i = new Intent(this, DetailViewController.class);
+        i.setAction(DetailViewController.ACTION_CREATE);
+        startActivity(i);
+    }
+    
+    public void openNote(int position) {
+        String uuid = Model.sharedInstance().getHandleAtIndex(position).uniqueID;
+        Intent i = new Intent(this, DetailViewController.class);
+        i.setAction(DetailViewController.ACTION_EDIT);
+        i.putExtra(DetailViewController.EXTRA_UUID, uuid);
+        startActivity(i);
+    }
+    
+    public void deleteNote(int position) {
+        String uuid = Model.sharedInstance().getHandleAtIndex(position).uniqueID;
+        Model.sharedInstance().deleteNoteWithUniqueID(uuid);
+    }
+    
+    public void onModelChange(Object notification) {
+        _adapter.notifyDataSetChanged();
     }
 
 }

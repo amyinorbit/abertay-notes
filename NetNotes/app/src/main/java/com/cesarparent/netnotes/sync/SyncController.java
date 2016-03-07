@@ -36,17 +36,10 @@ import java.util.Date;
  */
 public class SyncController {
     
-    /// String contants for notifications
-    public static final String kLoggedInNotification =          "kLoggedInNotification";
-    public static final String kLoggedOutNotification =         "kLoggedOutNotification";
-    public static final String kLoginFailNotification =         "kLoginFailNotification";
-    public static final String kUpdateReceivedNotification =    "kUpdateReceivedNotification";
-    public static final String kDeleteReceivedNotification =    "kDeleteReceivedNotification";
-    
     private static final String API_KEY = "C162E35C-638C-478A-8A57-F89FA72B9AA6";
 
     private static SyncController _instance = null;
-    private Authenticator                   _authenticator;
+    private Authenticator _authenticator;
 
     /**
      * Get the shared Sync Controller singleton instance for the app.

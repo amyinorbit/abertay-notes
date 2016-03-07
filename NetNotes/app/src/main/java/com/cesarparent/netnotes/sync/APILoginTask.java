@@ -3,6 +3,7 @@ package com.cesarparent.netnotes.sync;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.Utils;
 import com.cesarparent.utils.NotificationCenter;
 
@@ -41,7 +42,7 @@ class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             try {
                 String token = response.getBody().getString("token");
                 SyncController.sharedInstance().getAuthenticator().setCredentials(_email, token);
-                NotificationCenter.defaultCenter().postNotification(SyncController.kLoggedInNotification,
+                NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_SUCCESS,
                                                                     token);
             }
             catch(JSONException e) {
@@ -49,6 +50,8 @@ class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             }
         } else {
             SyncController.sharedInstance().getAuthenticator().invalidateCredentials();
+            NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_FAIL,
+                                                                null);
         }
         _delegate.taskDidReceiveResponse(response);
         Log.d("APILoginTask", "Login status: " + response.getStatus());

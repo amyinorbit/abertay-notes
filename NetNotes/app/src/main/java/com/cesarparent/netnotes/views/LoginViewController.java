@@ -38,14 +38,14 @@ public class LoginViewController extends AppCompatActivity implements APITaskDel
         super.onCreate(savedInstanceState);
         
         if(SyncController.sharedInstance().getAuthenticator().isLoggedIn()) {
-            showLoggedIn();
+            showLoggedIn(false);
         } else {
-            showLogIn();
+            showLogIn(false);
         }
     }
     
-    private void showLoggedIn() {
-        smoothTransition(R.layout.view_logged_in);
+    private void showLoggedIn(boolean fade) {
+        smoothTransition(R.layout.view_logged_in, fade);
         
         Authenticator auth = SyncController.sharedInstance().getAuthenticator();
         
@@ -59,8 +59,8 @@ public class LoginViewController extends AppCompatActivity implements APITaskDel
         setUpToolbar();
     }
     
-    private void showLogIn() {
-        smoothTransition(R.layout.view_login);
+    private void showLogIn(boolean fade) {
+        smoothTransition(R.layout.view_login, fade);
 
         _loginProgressIndicator = (ProgressBar)findViewById(R.id.progressBar);
         _button = (Button)findViewById(R.id.logInOutButton);
@@ -92,16 +92,20 @@ public class LoginViewController extends AppCompatActivity implements APITaskDel
         return super.onOptionsItemSelected(item);
     }
     
-    public void smoothTransition(int id) {
-        LayoutInflater inflator = getLayoutInflater();
-        View view = inflator.inflate(id, null);
-        view.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
-        setContentView(view);
+    public void smoothTransition(int id, boolean smooth) {
+        if(smooth) {
+            LayoutInflater inflator = getLayoutInflater();
+            View view = inflator.inflate(id, null);
+            view.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
+            setContentView(view);
+        } else {
+            setContentView(id);
+        }
     }
     
     public void logOut(View sender) {
         SyncController.sharedInstance().getAuthenticator().invalidateCredentials();
-        showLogIn();
+        showLogIn(true);
     }
     
     public void logIn(View sender) {
@@ -119,7 +123,7 @@ public class LoginViewController extends AppCompatActivity implements APITaskDel
         _button.setEnabled(true);
         if(response.getStatus() == APIResponse.SUCCESS) {
             Snackbar.make(_button, R.string.loginmsg_success, Snackbar.LENGTH_SHORT).show();
-            showLoggedIn();
+            showLoggedIn(true);
         } else {
             Snackbar.make(_button, R.string.loginmsg_failed, Snackbar.LENGTH_SHORT).show();
         }

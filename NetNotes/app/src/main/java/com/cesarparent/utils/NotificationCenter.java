@@ -45,6 +45,7 @@ public class NotificationCenter {
         public void perform(Object object) {
             if(targetMethod == null) { return; }
             Log.d("NotificationCenter", "Calling Method: "+observer.get().getClass()+"::"+target);
+            Log.d("NotificationCenter", "Observer Instance: "+observer.get());
             try {
                 targetMethod.invoke(observer.get(), object);
             }
@@ -95,7 +96,8 @@ public class NotificationCenter {
         Iterator<Observer> it = _observers.iterator();
         while (it.hasNext()) {
             Observer obs = it.next();
-            if(obs.observer == observer) {
+            if(obs.observer.get() == observer) {
+                Log.d("NotificationCenter", "Removing observer "+observer);
                 it.remove();
             }
         }

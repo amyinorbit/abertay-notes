@@ -2,6 +2,8 @@ package com.cesarparent.netnotes.model;
 
 import android.util.Log;
 
+import com.cesarparent.utils.Utils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,6 +28,20 @@ public class Note {
     private Date    _sortDate;
     private String  _uniqueID;
 
+    public Note(String uniqueID, String text, String createDate, String sortDate) {
+        _uniqueID = uniqueID;
+        _text = text;
+        try {
+            _creationDate = Utils.dateFromJSON(createDate);
+            _sortDate = Utils.dateFromJSON(sortDate);
+        }
+        catch(ParseException e) {
+            _creationDate = new Date();
+            _sortDate = new Date();
+        }
+        
+        //_creationDate = Utils.dateFromJSON(crea)
+    }
 
     public Note(String text) {
         _sortDate = new Date();
@@ -50,6 +66,10 @@ public class Note {
         obj.put("createDate", format.format(_creationDate));
         obj.put("sortDate", format.format(_sortDate));
         return obj;
+    }
+    
+    public NoteHandle getHandle() {
+        return new NoteHandle(_uniqueID, _text.substring(0, 128)+"…");
     }
 
     public Note detachedCopy() {

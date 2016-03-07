@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:name=".views.RootViewController"
             android:windowSoftInputMode="adjustResize"
             android:label="@string/title_activity_root_view_controller"

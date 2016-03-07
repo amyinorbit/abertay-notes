@@ -19,14 +19,14 @@
         android:id="@+id/logInOutButton"
         android:singleLine="false"
         android:onClick="logOut"
-        android:text="@string/log_out"
+        android:text="@string/action_logout"
         android:theme="@style/dangerButton"
-        android:layout_below="@+id/emailTextField"
         android:layout_marginTop="20dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
         android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"/>
+        android:layout_marginRight="20dp"
+        android:layout_below="@+id/emailTextField"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -34,7 +34,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/emailTextField"
         android:text="email@server.tld"
-        android:layout_below="@+id/textView"
+        android:layout_below="@+id/emailLabel"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="10dp"/>
@@ -44,10 +44,11 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/logged_in"
-        android:id="@+id/textView"
+        android:id="@+id/emailLabel"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:textColor="@color/colorPrimary"
-        android:fontFeatureSettings="smcp"/>
+        android:fontFeatureSettings="smcp"
+        android:layout_alignParentEnd="true"/>
 
 </RelativeLayout>

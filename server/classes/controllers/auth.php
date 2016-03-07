@@ -123,6 +123,15 @@ class auth {
     }
     
     /**
+     * Nukes a token from the database. Used when a user logs out.
+     */
+    private static function NukeToken($userID, $deviceID) {
+        $sql = "DELETE FROM `token` WHERE `userID` = :userID AND `deviceID` = :deviceID;";
+        $stmt = \app::Connection()->prepare($sql);
+        $stmt->execute(["userID" => $userID, "deviceID" => $deviceID]);
+    }
+    
+    /**
      * Send a 401 Unauthorized response
      */
     public static function _Unauthorized($res) {
