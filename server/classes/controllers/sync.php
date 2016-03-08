@@ -72,7 +72,7 @@ EOT;
                 "text" => $note["text"],
                 "sortDate" => $note["sortDate"],
                 "createDate" => $note["createDate"],
-                "syncDate" => $clientTime,
+                "syncDate" => \utils::Date(),
             ]);
         }
         $db->commit();
@@ -92,7 +92,7 @@ EOT;
     public function Delete($req, $res) {
         $db = \app::Connection();
         
-        $clientTime = $req->Header("X-NetNotes-Time", 0);
+        $clientTime = $req->Header("X-NetNotes-Time", \utils::Date(0));
         $transaction = json_decode($req->Body(), true);
         if(is_null($transaction) || !is_array($transaction)) {
             return $this->_InvalidFormat($res);
