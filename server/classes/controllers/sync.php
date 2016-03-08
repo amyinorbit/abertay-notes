@@ -7,7 +7,7 @@ class sync {
     private static $insert = <<<EOT
     INSERT INTO `note`
     (`userID`, `uniqueID`, `text`, `sortDate`, `createDate`, `syncDate`)
-    VALUES (:userID, :uniqueID, :text, :sortDate, :createDate, :syncDateg)
+    VALUES (:userID, :uniqueID, :text, :sortDate, :createDate, :syncDate)
     ON DUPLICATE KEY UPDATE
     `text` = IF(sortDate < VALUES(sortDate), VALUES(text), text),
     `syncDate` = IF(sortDate < VALUES(sortDate), VALUES(syncDate), syncDate),
