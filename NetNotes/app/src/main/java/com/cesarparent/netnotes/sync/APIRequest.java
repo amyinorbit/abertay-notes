@@ -41,6 +41,7 @@ public class APIRequest {
             _connection.setUseCaches(false);
             _connection.setRequestMethod(method);
             _connection.setFixedLengthStreamingMode(0);
+            Log.d("APIRequest", "Sync Date: "+transaction);
             _connection.setRequestProperty("X-NetNotes-Time", transaction);
             _connection.setRequestProperty("X-NetNotes-DeviceID", CPApplication.getDeviceID());
             _connection.setRequestProperty("Content-Length", "0");

@@ -33,8 +33,8 @@ EOT;
 
     private static $insertDeleted = <<<EOT
     INSERT INTO `deletedNote`
-    (`userID`, `uniqueID`)
-    VALUES (:userID, :uniqueID);
+    (`userID`, `uniqueID`, `deleteDate`)
+    VALUES (:userID, :uniqueID, :deleteDate);
 EOT;
 
     private static $selDelete = <<<EOT
@@ -106,7 +106,11 @@ EOT;
                 return $this->_InvalidFormat($res);
             }
             $stmt1->execute(["userID" => \app::UserID(), "uniqueID" => $uuid]);
-            $stmt2->execute(["userID" => \app::UserID(), "uniqueID" => $uuid]);
+            $stmt2->execute([
+                "userID" => \app::UserID(),
+                "uniqueID" => $uuid,
+                "deleteDate" => \utils::Date()
+            ]);
         }
         $db->commit();
         
