@@ -51,16 +51,6 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"/>
 
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/progressBar"
-        android:indeterminate="true"
-        style="@android:style/Widget.Material.ProgressBar.Large"
-        android:layout_below="@+id/logInOutButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"/>
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

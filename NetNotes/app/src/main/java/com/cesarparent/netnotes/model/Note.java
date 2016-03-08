@@ -1,7 +1,6 @@
 package com.cesarparent.netnotes.model;
 
-import android.util.Log;
-
+import com.cesarparent.netnotes.sync.JSONAble;
 import com.cesarparent.utils.Utils;
 
 import org.json.JSONException;
@@ -19,7 +18,7 @@ import java.util.UUID;
  * Represents a note, that can be stored in the application's database and synchronised
  * with the server.
  */
-public class Note {
+public class Note implements JSONAble {
     
     //public static final String 
 
@@ -39,8 +38,6 @@ public class Note {
             _creationDate = new Date();
             _sortDate = new Date();
         }
-        
-        //_creationDate = Utils.dateFromJSON(crea)
     }
 
     public Note(String text) {
@@ -56,6 +53,10 @@ public class Note {
         _creationDate = format.parse(obj.getString("createDate"));
         _sortDate = format.parse(obj.getString("sortDate"));
         _uniqueID = obj.getString("uniqueID");
+    }
+    
+    public String toString() {
+        return "Note#"+_uniqueID+" { "+_text+" }";
     }
 
     public JSONObject toJSON() throws JSONException {

@@ -9,6 +9,8 @@ import com.cesarparent.utils.NotificationCenter;
 
 import org.json.JSONException;
 
+import java.util.Date;
+
 /**
  * Created by cesar on 04/03/2016.
  * 
@@ -31,7 +33,7 @@ class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             System.exit(2);
         }
         _email = params[0];
-        APIRequest request = new APIRequest(APIRequest.ENDPOINT_LOGIN, "POST");
+        APIRequest request = new APIRequest(APIRequest.ENDPOINT_LOGIN, "POST", Utils.JSONDate(new Date()));
         request.setAuthtorization(Utils.HTTPBasicAuth(params[0], params[1]));
         return request.send();
     }

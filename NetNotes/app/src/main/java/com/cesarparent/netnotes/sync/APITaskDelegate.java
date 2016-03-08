@@ -5,10 +5,9 @@ package com.cesarparent.netnotes.sync;
  * 
  * Basic Delegate that will be notified of an API's task changes
  */
-public interface APITaskDelegate {
+public abstract class APITaskDelegate {
     
-    void taskDidReceiveResponse(APIResponse response);
+    public abstract void taskDidReceiveResponse(APIResponse response);
     
-    
-    void taskWasCancelled();
+    public void taskWasCancelled() {};
 }

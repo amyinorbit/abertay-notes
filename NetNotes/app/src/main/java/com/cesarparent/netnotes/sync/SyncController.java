@@ -1,32 +1,20 @@
 package com.cesarparent.netnotes.sync;
 
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.AsyncTask;
-import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.cesarparent.netnotes.CPApplication;
-import com.cesarparent.netnotes.R;
+import com.cesarparent.netnotes.model.DBController;
+import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.Note;
-import com.cesarparent.utils.NotificationCenter;
+import com.cesarparent.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -36,10 +24,13 @@ import java.util.Date;
  */
 public class SyncController {
     
-    private static final String API_KEY = "C162E35C-638C-478A-8A57-F89FA72B9AA6";
+    private static final String UPDATES_SQL = "SELECT uniqueID, text, createDate, sortDate " +
+                                              "FROM note WHERE sortDate > ?";
+    private static final String DELETES_SQL = "SELECT uniqueID FROM deleted WHERE deleteDate > ?";
 
-    private static SyncController _instance = null;
-    private Authenticator _authenticator;
+    private static SyncController   _instance = null;
+    private Authenticator           _authenticator;
+    private Date                    _lastSync;
 
     /**
      * Get the shared Sync Controller singleton instance for the app.
@@ -51,7 +42,7 @@ public class SyncController {
         }
         return _instance;
     }
-
+    
     /**
      * Creates a Sync Controller. Only called by sharedInstance().
      * When created, the controller will check if credentials are stored on the device, and
@@ -59,6 +50,7 @@ public class SyncController {
      */
     private SyncController() {
         _authenticator = new Authenticator();
+        _lastSync = new Date(CPApplication.getSharedPreferences().getLong("sync.date", 0));
     }
     
     public Authenticator getAuthenticator() {
@@ -70,13 +62,92 @@ public class SyncController {
         task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, email, password);
     }
     
-    /**
-     * Post a new or update note to the server.
-     * @param note  The note to send to the server.
-     */
-    public void postNote(Note note) {
-        if(!_authenticator.isLoggedIn()) { return; }
-        // Get a note that can be used on other threads.
+    public void triggerSync() {
+        if(!getAuthenticator().isLoggedIn()) { return; }
+        final String last = Utils.JSONDate(_lastSync);
+        Log.i("SyncController", "Starting sync since: "+last);
+        new DBController.Fetch(UPDATES_SQL, new DBController.onResult() {
+            @Override
+            public void run(Cursor c) {
+                sendUpdates(c, last);
+            }
+        }).execute(last);
+        
+        new DBController.Fetch(DELETES_SQL, new DBController.onResult() {
+            @Override
+            public void run(Cursor c) {
+                sendDeletes(c, last);
+            }
+        }).execute(last);
+        
+    }
+    
+    private void sendUpdates(Cursor c, String transaction) {
+        final Note notes[] = new Note[c.getCount()];
+        for(int i = 0; i < c.getCount(); ++i) {
+            c.moveToPosition(i);
+            notes[i] = new Note(c.getString(0), c.getString(1), c.getString(2), c.getString(3));
+        }
+        APIJSONTask update = new APIJSONTask(APIRequest.ENDPOINT_NOTES,
+                                             getAuthenticator().getToken(),
+                                             transaction,
+                                             new APITaskDelegate() {
+             @Override
+             public void taskDidReceiveResponse(APIResponse response) {
+                 processAPINotes(response);
+             }
+        });
+        update.execute(notes);
+        
+    }
+    
+    private void sendDeletes(Cursor c, String transaction) {
+        final String uuids[] = new String[c.getCount()];
+        for(int i = 0; i < c.getCount(); ++i) {
+            c.moveToPosition(i);
+            uuids[i] = c.getString(0);
+        }
+        APIJSONTask delete = new APIJSONTask(APIRequest.ENDPOINT_DELETE,
+                                             getAuthenticator().getToken(),
+                                             transaction,
+                                             new APITaskDelegate() {
+            @Override
+            public void taskDidReceiveResponse(APIResponse response) {
+                processAPIDeletes(response);
+            }
+        });
+        delete.execute(uuids);
+    }
+    
+    private void processAPINotes(APIResponse res) {
+        if(res.getStatus() != APIResponse.SUCCESS) { return; }
+        try {
+            JSONArray changes = res.getBody().getJSONArray("changes");
+            for(int i = 0; i < changes.length(); ++i) {
+                // TODO: Change to one single transaction for every add/update
+                Model.sharedInstance().addNote(new Note(changes.getJSONObject(i)));
+            }
+        }
+        catch(JSONException e) {
+            Log.e("SyncController", "Invalid repsonse JSON");
+        }
+        catch(ParseException e) {
+            Log.e("SyncController", "Invalid date format returned");
+        }
+    }
+    
+    private void processAPIDeletes(APIResponse res) {
+        if(res.getStatus() != APIResponse.SUCCESS) { return; }
+        try {
+            JSONArray changes = res.getBody().getJSONArray("changes");
+            for(int i = 0; i < changes.length(); ++i) {
+                // TODO: Change to one single transaction for every deletion
+                Model.sharedInstance().deleteNoteWithUniqueID(changes.getString(i));
+            }
+        }
+        catch(JSONException e) {
+            Log.e("SyncController", "Invalid repsonse JSON");
+        }
     }
 
     /**

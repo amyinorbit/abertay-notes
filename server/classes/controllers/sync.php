@@ -7,10 +7,10 @@ class sync {
     private static $insert = <<<EOT
     INSERT INTO `note`
     (`userID`, `uniqueID`, `text`, `sortDate`, `createDate`)
-    VALUES (?, ?, ?, ?, ?)
+    VALUES (:userID, :uniqueID, :text, :sortDate, :createDate)
     ON DUPLICATE KEY UPDATE
-    `sortDate` = IF(sortDate < VALUES(sortDate), VALUES(sortDate), sortDate),
-    `text` = IF(sortDate < VALUES(sortDate), VALUES(text), text);
+    `sortDate` = IF(`sortDate` < VALUES(`sortDate`), VALUES(`sortDate`), `sortDate`),
+    `text` = IF(`sortDate` < VALUES(`sortDate`), VALUES(`text`), :text);
 EOT;
 
     private static $selInsert = <<<EOT
@@ -66,11 +66,11 @@ EOT;
                 return $this->_InvalidFormat();
             }
             $stmt->execute([
-                \app::UserID(),
-                $note["uniqueID"],
-                $note["text"],
-                $note["sortDate"],
-                $note["createDate"]
+                "userID" => \app::UserID(),
+                "uniqueID" => $note["uniqueID"],
+                "text" => $note["text"],
+                "sortDate" => $note["sortDate"],
+                "createDate" => $note["createDate"]
             ]);
         }
         $db->commit();

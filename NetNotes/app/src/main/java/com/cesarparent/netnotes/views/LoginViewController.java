@@ -1,5 +1,6 @@
 package com.cesarparent.netnotes.views;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NavUtils;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cesarparent.netnotes.R;
+import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.sync.APIResponse;
 import com.cesarparent.netnotes.sync.APITaskDelegate;
 import com.cesarparent.netnotes.sync.Authenticator;
@@ -25,9 +27,9 @@ import com.cesarparent.utils.Utils;
 
 import org.w3c.dom.Text;
 
-public class LoginViewController extends AppCompatActivity implements APITaskDelegate {
+public class LoginViewController extends AppCompatActivity {
     
-    private ProgressBar _loginProgressIndicator;
+    private ProgressDialog _progress;
     private TextView    _emailTextField;
     private EditText    _passwordTextField;
     private Button      _button;
@@ -51,9 +53,7 @@ public class LoginViewController extends AppCompatActivity implements APITaskDel
         
         _emailTextField = (TextView)findViewById(R.id.emailTextField);
         _button = (Button)findViewById(R.id.logInOutButton);
-        _loginProgressIndicator = null;
         _passwordTextField = null;
-        _loginProgressIndicator = null;
         _emailTextField.setText(auth.getEmail());
         
         setUpToolbar();
@@ -62,12 +62,9 @@ public class LoginViewController extends AppCompatActivity implements APITaskDel
     private void showLogIn(boolean fade) {
         smoothTransition(R.layout.view_login, fade);
 
-        _loginProgressIndicator = (ProgressBar)findViewById(R.id.progressBar);
         _button = (Button)findViewById(R.id.logInOutButton);
         _emailTextField = (TextView)findViewById(R.id.emailTextField);
         _passwordTextField = (EditText)findViewById(R.id.passwordTextField);
-        _loginProgressIndicator = (ProgressBar)findViewById(R.id.progressBar);
-        _loginProgressIndicator.setVisibility(View.INVISIBLE);
         
         setUpToolbar();
     }
@@ -105,21 +102,27 @@ public class LoginViewController extends AppCompatActivity implements APITaskDel
     
     public void logOut(View sender) {
         SyncController.sharedInstance().getAuthenticator().invalidateCredentials();
+        Model.sharedInstance().flushDeleted();
         showLogIn(true);
     }
     
     public void logIn(View sender) {
         Utils.hideSoftKeyboard(this);
         _button.setEnabled(false);
-        _loginProgressIndicator.setVisibility(View.VISIBLE);
+        _progress = ProgressDialog.show(this, "Login In", "Please wait", true);
         SyncController.sharedInstance().logIn(_emailTextField.getText().toString(),
                                               _passwordTextField.getText().toString(),
-                                              this);
+                                              new APITaskDelegate() {
+            @Override
+            public void taskDidReceiveResponse(APIResponse response) {
+                onLogin(response);
+            }
+        });
     }
 
-    @Override
-    public void taskDidReceiveResponse(APIResponse response) {
-        _loginProgressIndicator.setVisibility(View.INVISIBLE);
+    
+    public void onLogin(APIResponse response) {
+        _progress.dismiss();
         _button.setEnabled(true);
         if(response.getStatus() == APIResponse.SUCCESS) {
             Snackbar.make(_button, R.string.loginmsg_success, Snackbar.LENGTH_SHORT).show();
@@ -129,8 +132,9 @@ public class LoginViewController extends AppCompatActivity implements APITaskDel
         }
     }
     
-    @Override
-    public void taskWasCancelled() {
+    
+    public void onLoginCancel() {
+        _progress.dismiss();
         _button.setEnabled(true);
     }
 }

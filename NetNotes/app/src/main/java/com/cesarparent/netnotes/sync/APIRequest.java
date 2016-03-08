@@ -7,6 +7,7 @@ import com.cesarparent.netnotes.R;
 import com.cesarparent.utils.Utils;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -31,7 +32,7 @@ public class APIRequest {
     
     private HttpURLConnection _connection;
     
-    public APIRequest(String endpoint, String method) {
+    public APIRequest(String endpoint, String method, String transaction) {
         try {
             URL url = new URL(CPApplication.string(R.string.api_location)+endpoint);
             _connection = (HttpURLConnection)url.openConnection();
@@ -40,7 +41,7 @@ public class APIRequest {
             _connection.setUseCaches(false);
             _connection.setRequestMethod(method);
             _connection.setFixedLengthStreamingMode(0);
-            _connection.setRequestProperty("X-NetNotes-Time", Utils.JSONDate(new Date()));
+            _connection.setRequestProperty("X-NetNotes-Time", transaction);
             _connection.setRequestProperty("X-NetNotes-DeviceID", CPApplication.getDeviceID());
             _connection.setRequestProperty("Content-Length", "0");
         }
@@ -50,19 +51,31 @@ public class APIRequest {
     }
     
     public APIRequest(String endpoint) {
-        this(endpoint, "POST");
+        this(endpoint, "POST", Utils.JSONDate(new Date(0)));
     }
     
     public void setAuthtorization(String token) {
         _connection.setRequestProperty("Authorization", token);
     }
     
-    public void putData(JSONArray body) {
-        _connection.setDoOutput(true);
-        byte[] bytes = body.toString().getBytes();
-        _connection.setFixedLengthStreamingMode(bytes.length);
+    public void putData(JSONObject body) {
         _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        
+        putData(body.toString());
+        Log.d("APIRequest", "Request Body: "+body.toString());
+    }
+    
+    
+    public void putData(JSONArray body) {
+        _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        putData(body.toString());
+        Log.d("APIRequest", "Request Body: " + body.toString());
+    }
+    
+    private void putData(String body) {
+        _connection.setDoOutput(true);
+        byte[] bytes = body.getBytes();
+        _connection.setFixedLengthStreamingMode(bytes.length);
+
         OutputStream os = null;
         try {
             os = new BufferedOutputStream(_connection.getOutputStream());
@@ -86,7 +99,6 @@ public class APIRequest {
         try {
             _connection.connect();
             int code = _connection.getResponseCode();
-            Log.d("APIRequest", "Received response with code: "+code);
             if(code == 400 || code == 200) {
                 String line, json = "";
                 InputStream is = code == 200 ? _connection.getInputStream() : _connection.getErrorStream();

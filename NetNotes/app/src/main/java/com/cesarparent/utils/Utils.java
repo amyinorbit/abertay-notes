@@ -51,7 +51,7 @@ public class Utils {
             crypto.init(secret);
             String hmac = Base64.encodeToString(crypto.doFinal(token.getBytes("UTF-8")),
                                                 Base64.NO_WRAP);
-            return Base64.encodeToString((username+":"+"").getBytes(), Base64.NO_WRAP);
+            return Base64.encodeToString((username+":"+hmac).getBytes(), Base64.NO_WRAP);
         }
         catch(NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
             Log.e("HMAC", "Error Creating Token: "+ e.getMessage());

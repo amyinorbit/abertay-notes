@@ -41,19 +41,26 @@ public class DetailViewController extends AppCompatActivity {
         
         processIntent(getIntent());
         
+        if(_currentNote != null) {
+            _noteTextView.setText(_currentNote.text());
+        }
+        
     }
     
     @Override
     protected void onPause() {
         super.onPause();
-        if(_currentNote != null) {
-            _currentNote.setText(_noteTextView.getText().toString());
-            if(_currentNote.text().isEmpty()) { return; }
-            Model.sharedInstance().addNote(_currentNote);
-        }
+        if(_currentNote == null) { return; }
+        if(_currentNote.text().equals(_noteTextView.getText().toString())) { return; }
+        _currentNote.setText(_noteTextView.getText().toString());
+        Model.sharedInstance().addNote(_currentNote);
     }
     
     private void processIntent(Intent i) {
+        if(_currentNote != null) { 
+            Log.d("DetailViewController", "Object already exists");
+            return;
+        }
         if(i == null) { return; }
         if(i.getAction() == null) { return; }
         switch (i.getAction()) {
@@ -72,12 +79,16 @@ public class DetailViewController extends AppCompatActivity {
             case ACTION_EDIT:
                 String uuid = i.getStringExtra(EXTRA_UUID);
                 if(uuid == null) { return; }
-                _currentNote = Model.sharedInstance().getNoteWithUniqueID(uuid);
+                Model.sharedInstance().getNoteWithUniqueID(uuid, new Model.NoteCompletionBlock() {
+                    @Override
+                    public void run(Note note) {
+                        _currentNote = note;
+                        _noteTextView.setText(_currentNote.text());
+                    }
+                });
                 break;
-        }
-        
-        if(_currentNote != null) {
-            _noteTextView.setText(_currentNote.text());
+            default:
+                _currentNote = new Note("");
         }
     }
 
@@ -106,6 +117,7 @@ public class DetailViewController extends AppCompatActivity {
                 Model.sharedInstance().deleteNoteWithUniqueID(_currentNote.uniqueID());
                 NavUtils.navigateUpFromSameTask(this);
                 _currentNote = null;
+                finish();
                 break;
 
             default:

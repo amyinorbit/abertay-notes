@@ -1,13 +1,17 @@
 package com.cesarparent.netnotes.sync;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.cesarparent.netnotes.CPApplication;
+import com.cesarparent.utils.Utils;
 
 /**
  * Created by cesar on 04/03/2016.
  */
 public class Authenticator {
+
+    private static final String API_KEY = "C162E35C-638C-478A-8A57-F89FA72B9AA6";
     
     private SharedPreferences _prefs;
     private String _token;
@@ -20,7 +24,9 @@ public class Authenticator {
     }
     
     public String getToken() {
-        return (_token != null) ? _token : "";
+        if(_token == null) { return null; }
+        String mac = Utils.HMACAuth(_email, _token, API_KEY);
+        return mac;
     }
     
     public String getEmail() {

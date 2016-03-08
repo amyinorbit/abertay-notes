@@ -1,10 +1,9 @@
 package com.cesarparent.netnotes.views;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -16,14 +15,13 @@ import android.widget.ListView;
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.NotesAdapter;
+import com.cesarparent.netnotes.sync.SyncController;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;
 
 public class RootViewController extends AppCompatActivity {
     
     private NotesAdapter _adapter;
-    private ListView _noteListView;
-    private Model _model;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,22 +29,30 @@ public class RootViewController extends AppCompatActivity {
         setContentView(R.layout.view_root);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        
-        _noteListView = (ListView)findViewById(R.id.notesListView);
+
+        ListView noteListView = (ListView) findViewById(R.id.notesListView);
         _adapter = new NotesAdapter(this, Model.sharedInstance());
-        _noteListView.setAdapter(_adapter);
+        noteListView.setAdapter(_adapter);
         
-        _noteListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        noteListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 openNote(position);
             }
         });
         
-        _noteListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        noteListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                deleteNote(position);
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(RootViewController.this);
+                builder.setMessage("Delete Note?")
+                       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                           @Override
+                           public void onClick(DialogInterface dialog, int which) {
+                               deleteNote(position);
+                           }
+                       })
+                       .setNegativeButton("No", null).show();
                 return true;
             }
         });
@@ -81,6 +87,10 @@ public class RootViewController extends AppCompatActivity {
             case R.id.action_settings:
                 Intent i = new Intent(this, LoginViewController.class);
                 startActivity(i);
+                break;
+            
+            case R.id.action_sync:
+                SyncController.sharedInstance().triggerSync();
                 break;
 
             default:

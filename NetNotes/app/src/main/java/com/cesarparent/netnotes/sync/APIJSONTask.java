@@ -7,42 +7,49 @@ import com.cesarparent.netnotes.model.Note;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by cesar on 04/03/2016.
  * 
  */
-class APIJSONTask extends AsyncTask<Note, Void, APIResponse> {
+class APIJSONTask extends AsyncTask<Object, Void, APIResponse> {
 
     private APITaskDelegate _delegate;
     private String          _endpoint;
     private String          _token;
+    private String          _transaction;
 
-    public APIJSONTask(String endpoint, String token, APITaskDelegate delegate) {
+    public APIJSONTask(String endpoint, String token, String transaction, APITaskDelegate delegate) {
         _delegate = delegate;
         _endpoint = endpoint;
         _token = token;
+        _transaction = transaction;
     }
 
     @Override
-    protected APIResponse doInBackground(Note[] params) {
+    protected APIResponse doInBackground(Object... params) {
         
-        APIRequest request = new APIRequest(_endpoint, "POST");
+        APIRequest request = new APIRequest(_endpoint, "POST", _transaction);
         request.setAuthtorization(_token);
         // Do stuff with notes.
+        JSONArray body = new JSONArray();
         if(params.length > 0) {
-            JSONArray body = new JSONArray();
             try {
-                for(Note note : params) {
-                    body.put(note.toJSON());
+                for(Object obj : params) {
+                    if(obj instanceof JSONAble) {
+                        body.put(((JSONAble) obj).toJSON());
+                    } else {
+                        body.put(obj.toString());
+                    }
                 }
-                request.putData(body);
             }
             catch (JSONException e) {
                 Log.e("APIJSONTask", "Error creating JSON request body" + e.getMessage());
                 cancel();
             }
         }
+        request.putData(body);
         return request.send();
     }
     
@@ -53,6 +60,10 @@ class APIJSONTask extends AsyncTask<Note, Void, APIResponse> {
 
     @Override
     protected void onPostExecute(APIResponse response) {
+        Log.d("APIJSONTask", "Received response: " + response.getStatus());
+        if(response.getBody() != null) {
+            Log.d("APIJSONTask", "Response body: " + response.getBody().toString());
+        }
         _delegate.taskDidReceiveResponse(response);
     }
 }

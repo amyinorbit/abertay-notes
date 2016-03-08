@@ -4,7 +4,6 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.provider.Settings;
-import android.util.Log;
 
 import java.util.Locale;
 
@@ -15,7 +14,6 @@ import java.util.Locale;
  */
 public class CPApplication extends Application {
     private static Context _context;
-    private static String _deviceID = null;
 
     public void onCreate() {
         super.onCreate();

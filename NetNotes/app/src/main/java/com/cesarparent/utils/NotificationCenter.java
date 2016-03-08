@@ -60,7 +60,7 @@ public class NotificationCenter {
         public boolean equals(Observer other) {
             return (observer.get() == other.observer.get() &&
                     target.equals(other.target) &&
-                    name.equals(other.name));
+                    (name == other.name || name.equals(other.name)));
         }
     }
 

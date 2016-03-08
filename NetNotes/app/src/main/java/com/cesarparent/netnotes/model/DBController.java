@@ -5,13 +5,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 
 import com.cesarparent.netnotes.CPApplication;
-
-import java.util.ArrayList;
 
 /**
  * Created by cesar on 23/02/2016.
@@ -20,41 +17,32 @@ import java.util.ArrayList;
  */
 public class DBController extends SQLiteOpenHelper {
 
-    
-    // Interfaces used as runnable-style callbacks
-    public interface DBUpdateBlock {
-        void run(SQLiteDatabase db);
-    }
-    
-    public interface DBFetchBlock {
-        Cursor run(SQLiteDatabase db);
-    }
-    
-    public interface DBResultBlock {
+    public interface onResult {
         void run(Cursor c);
     }
     
     // Basic DatabaseHelper data
-    public static final int kDBVersion = 3;
+    public static final int kDBVersion = 1;
     public static final String kDBName = "netnotes.db";
     
-    public static final String TABLE = "note";
-    
-    public static final String[] NOTE_COLUMNS = {
-            "uniqueID",
-            "text",
-            "createDate",
-            "sortDate"
-    };
-    
-    private static final String SQL_CREATE_ENTRIES = 
+    private static final String SQL_CREATE_NOTE = 
             "CREATE TABLE note ("+
             "uniqueID   CHAR(36) PRIMARY KEY,"+
             "text       TEXT NOT NULL DEFAULT \"\","+
             "createDate DATETIME,"+
             "sortDate   DATETIME)";
     
-    private static final String SQL_DELETE_ENTRIES = "DROP TABLE note";
+    private static final String SQL_CREATE_DELETE =
+            "CREATE TABLE deleted ("+
+            "uniqueID   CHAR(36) PRIMARY KEY,"+
+            "deleteDate DATETIME)";
+    
+    private static final String[] SQL_CREATE = {SQL_CREATE_NOTE, SQL_CREATE_DELETE};
+    
+    private static final String SQL_DELETE_NOTE = "DROP TABLE note";
+    private static final String SQL_DELETE_DELETE = "DROP TABLE deleted";
+    
+    private static final String[] SQL_DROP = {SQL_DELETE_NOTE, SQL_DELETE_DELETE};
     
     private static DBController _instance = null;
     
@@ -69,18 +57,21 @@ public class DBController extends SQLiteOpenHelper {
         super(CPApplication.getContext(), kDBName, null, kDBVersion);
     }
     
-    
     // DatabaseHelper overrides
     
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.d("DBController", "Creating Database Schema...");
-        db.execSQL(SQL_CREATE_ENTRIES);
+        for(String query : SQL_CREATE) {
+            db.execSQL(query);
+        }
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(SQL_DELETE_ENTRIES);
+        for(String query : SQL_DROP) {
+            db.execSQL(query);
+        };
         onCreate(db);
     }
 
@@ -89,60 +80,50 @@ public class DBController extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
     
-    public void runUpdate(DBUpdateBlock update) {
-        SQLiteDatabase db = getWritableDatabase();
-        db.beginTransaction();
-        update.run(db);
-        db.endTransaction();
-    }
-    
-    public void runUpdateInBackground(DBUpdateBlock update) {
-        new DBUpdateTask(update).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-    }
-    
-    public Cursor fetch(DBFetchBlock fetch) {
-        SQLiteDatabase db = getReadableDatabase();
-        return fetch.run(db);
-    }
-    
-    public void fetchInBackground(DBFetchBlock fetch, DBResultBlock result) {
-        new DBFetchTask(fetch, result).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-    }
-    
-    
     // AsyncTask stuff
     
-    private class DBUpdateTask extends AsyncTask<Void, Void, Void> {
+    public static class Update extends AsyncTask<Object, Void, Void> {
         
-        DBUpdateBlock _block;
+        String          _query;
+        Runnable        _done;
         
-        public DBUpdateTask(DBUpdateBlock block) {
-            _block = block;
+        public Update(String query, Runnable done) {
+            _query = query;
+            _done = done;
         }
         
         @Override
-        protected Void doInBackground(Void... params) {
-            SQLiteDatabase db = getWritableDatabase();
+        protected Void doInBackground(Object... params) {
+            SQLiteDatabase db = sharedInstance().getWritableDatabase();
             db.beginTransaction();
-            _block.run(db);
+            db.execSQL(_query, params);
+            db.setTransactionSuccessful();
             db.endTransaction();
             return null;
         }
+        
+        @Override
+        protected void onPostExecute(Void param) {
+            if(_done != null) {
+                _done.run();
+            }
+        }
     }
     
-    private class DBFetchTask extends AsyncTask<Void, Void, Cursor> {
+    public static class Fetch extends AsyncTask<String, Void, Cursor> {
         
-        DBFetchBlock _fetch;
-        DBResultBlock _result;
+        String          _query;
+        onResult        _result;
         
-        public DBFetchTask(DBFetchBlock fetch, DBResultBlock results) {
-            _fetch = fetch;
+        public Fetch(String query, onResult result) {
+            _query = query;
+            _result = result;
         }
         
         @Override
-        protected Cursor doInBackground(Void... params) {
-            SQLiteDatabase db = getReadableDatabase();
-            return _fetch.run(db);
+        protected Cursor doInBackground(String... params) {
+            SQLiteDatabase db = sharedInstance().getReadableDatabase();
+            return db.rawQuery(_query, params);
         }
         
         // We need the result blocks to run on the UI thread
