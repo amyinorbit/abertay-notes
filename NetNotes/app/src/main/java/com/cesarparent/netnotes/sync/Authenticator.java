@@ -13,58 +13,84 @@ public class Authenticator {
 
     private static final String API_KEY = "C162E35C-638C-478A-8A57-F89FA72B9AA6";
     
+    private static final String DEFAULT_DATE = "1970-01-01 00:00:01+000";
+    
+    private static final String KEY_EMAIL = "user.email";
+    private static final String KEY_TOKEN = "user.token";
+    private static final String KEY_TIMEDELETE = "sync.time.delete";
+    private static final String KEY_TIMEUPDATE = "sync.time.update";
+    
     private SharedPreferences _prefs;
-    private String _token;
-    private String _email;
+    
+    final private Object _syncDateLock;
     
     public Authenticator() {
         _prefs = CPApplication.getSharedPreferences();
-        _email = _prefs.getString("user.email", null);
-        _token = _prefs.getString("user.token", null);
+        _syncDateLock = new Object();
+    }
+    
+    public String getAuthToken() {
+        if(!isLoggedIn()) { return null; }
+        return Utils.HMACAuth(getEmail(), getToken(), API_KEY);
     }
     
     public String getToken() {
-        if(_token == null) { return null; }
-        String mac = Utils.HMACAuth(_email, _token, API_KEY);
-        return mac;
+        return _prefs.getString(KEY_TOKEN, null);
     }
     
     public String getEmail() {
-        return (_email != null) ? _email : "";
+        return _prefs.getString(KEY_EMAIL, null);
     }
     
     public boolean isLoggedIn() {
-        return (_email != null && _token != null);
+        return (getEmail() != null && getToken() != null);
     }
     
     public void setCredentials(String email, String token) {
-        _email = email;
-        _token = token;
-        _writePrefs();
+        SharedPreferences.Editor editor = _prefs.edit();
+        editor.putString(KEY_EMAIL, email);
+        editor.putString(KEY_TOKEN, token);
+        editor.apply();
     }
     
-    public void setEmail(String email) {
-        _email = email;
-        _writePrefs();
+    public String getDeleteSyncTime() {
+        return _prefs.getString(KEY_TIMEDELETE, DEFAULT_DATE);
     }
     
-    public void setToken(String token) {
-        _token = token;
-        _writePrefs();
+    public String getUpdateSyncTime() {
+        return _prefs.getString(KEY_TIMEUPDATE, DEFAULT_DATE);
+    }
+    
+    public void setDeleteSyncTime(String time) {
+        synchronized (_syncDateLock) {
+            put(KEY_TIMEDELETE, time);
+        }
+    }
+    
+    public void setUpdateSyncTime(String time) {
+        synchronized (_syncDateLock) {
+            put(KEY_TIMEUPDATE, time);
+        }
+    }
+    
+    private void put(String key, String value) {
+        SharedPreferences.Editor editor = _prefs.edit();
+        editor.putString(key, value);
+        editor.apply();
     }
     
     public void invalidateCredentials() {
-        _email = _token = null;
         SharedPreferences.Editor editor = _prefs.edit();
-        editor.remove("user.email");
-        editor.remove("user.token");
+        editor.remove(KEY_EMAIL);
+        editor.remove(KEY_TOKEN);
         editor.apply();
     }
     
-    private void _writePrefs() {
+    public void invalidateSyncDates() {
         SharedPreferences.Editor editor = _prefs.edit();
-        editor.putString("user.email", _email);
-        editor.putString("user.token", _token);
+        editor.remove(KEY_TIMEUPDATE);
+        editor.remove(KEY_TIMEDELETE);
         editor.apply();
     }
+    
 }

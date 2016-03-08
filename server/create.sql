@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS note (
     text                TEXT NOT NULL,
     createDate          DATETIME NOT NULL,
     sortDate            DATETIME NOT NULL,
+    syncDate            DATETIME NOT NULL,
     CONSTRAINT note_pk PRIMARY KEY (uniqueID),
     CONSTRAINT note_user_fk FOREIGN KEY (userID) REFERENCES user(uniqueID) ON DELETE CASCADE
 );

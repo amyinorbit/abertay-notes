@@ -101,8 +101,8 @@ public class LoginViewController extends AppCompatActivity {
     }
     
     public void logOut(View sender) {
-        SyncController.sharedInstance().getAuthenticator().invalidateCredentials();
         Model.sharedInstance().flushDeleted();
+        SyncController.sharedInstance().logOut();
         showLogIn(true);
     }
     
@@ -124,6 +124,7 @@ public class LoginViewController extends AppCompatActivity {
     public void onLogin(APIResponse response) {
         _progress.dismiss();
         _button.setEnabled(true);
+        Model.sharedInstance().flushDeleted();
         if(response.getStatus() == APIResponse.SUCCESS) {
             Snackbar.make(_button, R.string.loginmsg_success, Snackbar.LENGTH_SHORT).show();
             showLoggedIn(true);

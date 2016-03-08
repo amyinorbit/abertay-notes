@@ -9,8 +9,9 @@ class sync {
     (`userID`, `uniqueID`, `text`, `sortDate`, `createDate`)
     VALUES (:userID, :uniqueID, :text, :sortDate, :createDate)
     ON DUPLICATE KEY UPDATE
-    `sortDate` = IF(`sortDate` < VALUES(`sortDate`), VALUES(`sortDate`), `sortDate`),
-    `text` = IF(`sortDate` < VALUES(`sortDate`), VALUES(`text`), :text);
+    `text` = IF(sortDate < VALUES(sortDate), VALUES(text), text),
+    `syncDate` = IF(sortDate < VALUES(sortDate), VALUES(syncDate), syncDate),
+    `sortDate` = IF(sortDate < VALUES(sortDate), VALUES(sortDate), sortDate);
 EOT;
 
     private static $selInsert = <<<EOT
@@ -22,7 +23,7 @@ EOT;
     FROM `note`
     WHERE
         `userID` = :userID AND
-        `sortDate` > :sortDate;
+        `syncDate` > :syncDate;
 EOT;
 
     private static $delete = <<<EOT
@@ -53,7 +54,7 @@ EOT;
     public function Update($req, $res) {
         $db = \app::Connection();
         
-        $clientTime = $req->Header("X-NetNotes-Time", 0);
+        $clientTime = $req->Header("X-NetNotes-Time", \utils::Date(0));
         $transaction = json_decode($req->Body(), true);
         if(is_null($transaction) || !is_array($transaction)) {
             return $this->_InvalidFormat($res);
@@ -70,13 +71,14 @@ EOT;
                 "uniqueID" => $note["uniqueID"],
                 "text" => $note["text"],
                 "sortDate" => $note["sortDate"],
-                "createDate" => $note["createDate"]
+                "createDate" => $note["createDate"],
+                "syncDate" => $clientTime,
             ]);
         }
         $db->commit();
         
         $stmt = $db->prepare(self::$selInsert);
-        if(!$stmt->execute(["userID" => \app::UserID(), "sortDate" => $clientTime])) {
+        if(!$stmt->execute(["userID" => \app::UserID(), "syncDate" => $clientTime])) {
             throw new \Exception("Database Error");
         }
         $res->SetBody(["changes" => $stmt->fetchAll(\PDO::FETCH_ASSOC)]);

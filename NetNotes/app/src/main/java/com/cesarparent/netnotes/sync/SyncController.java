@@ -8,11 +8,9 @@ import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.model.DBController;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.Note;
-import com.cesarparent.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -23,6 +21,9 @@ import java.util.Date;
  *
  */
 public class SyncController {
+    
+    public static final String TIME_UPDATE = "sync.time.update";
+    public static final String TIME_DELETES = "sync.time.deletes";
     
     private static final String UPDATES_SQL = "SELECT uniqueID, text, createDate, sortDate " +
                                               "FROM note WHERE sortDate > ?";
@@ -59,26 +60,33 @@ public class SyncController {
     
     public void logIn(String email, String password, APITaskDelegate delegate) {
         APILoginTask task = new APILoginTask(delegate);
+        Model.sharedInstance().flushDeleted();
         task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, email, password);
+    }
+    
+    public void logOut() {
+        getAuthenticator().invalidateCredentials();
+        Model.sharedInstance().flushDeleted();
     }
     
     public void triggerSync() {
         if(!getAuthenticator().isLoggedIn()) { return; }
-        final String last = Utils.JSONDate(_lastSync);
-        Log.i("SyncController", "Starting sync since: "+last);
-        new DBController.Fetch(UPDATES_SQL, new DBController.onResult() {
-            @Override
-            public void run(Cursor c) {
-                sendUpdates(c, last);
-            }
-        }).execute(last);
-        
+        final String lastDelete = getAuthenticator().getDeleteSyncTime();
+        final String lastUpdate = getAuthenticator().getUpdateSyncTime();
+
         new DBController.Fetch(DELETES_SQL, new DBController.onResult() {
             @Override
             public void run(Cursor c) {
-                sendDeletes(c, last);
+                sendDeletes(c, lastDelete);
             }
-        }).execute(last);
+        }).execute(lastDelete);
+        
+        new DBController.Fetch(UPDATES_SQL, new DBController.onResult() {
+            @Override
+            public void run(Cursor c) {
+                sendUpdates(c, lastUpdate);
+            }
+        }).execute(lastUpdate);
         
     }
     
@@ -89,7 +97,7 @@ public class SyncController {
             notes[i] = new Note(c.getString(0), c.getString(1), c.getString(2), c.getString(3));
         }
         APIJSONTask update = new APIJSONTask(APIRequest.ENDPOINT_NOTES,
-                                             getAuthenticator().getToken(),
+                                             getAuthenticator().getAuthToken(),
                                              transaction,
                                              new APITaskDelegate() {
              @Override
@@ -108,7 +116,7 @@ public class SyncController {
             uuids[i] = c.getString(0);
         }
         APIJSONTask delete = new APIJSONTask(APIRequest.ENDPOINT_DELETE,
-                                             getAuthenticator().getToken(),
+                                             getAuthenticator().getAuthToken(),
                                              transaction,
                                              new APITaskDelegate() {
             @Override
@@ -121,6 +129,7 @@ public class SyncController {
     
     private void processAPINotes(APIResponse res) {
         if(res.getStatus() != APIResponse.SUCCESS) { return; }
+        getAuthenticator().setUpdateSyncTime(res.getSyncTime());
         try {
             JSONArray changes = res.getBody().getJSONArray("changes");
             for(int i = 0; i < changes.length(); ++i) {
@@ -138,6 +147,7 @@ public class SyncController {
     
     private void processAPIDeletes(APIResponse res) {
         if(res.getStatus() != APIResponse.SUCCESS) { return; }
+        getAuthenticator().setDeleteSyncTime(res.getSyncTime());
         try {
             JSONArray changes = res.getBody().getJSONArray("changes");
             for(int i = 0; i < changes.length(); ++i) {

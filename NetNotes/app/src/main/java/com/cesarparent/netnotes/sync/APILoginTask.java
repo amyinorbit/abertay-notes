@@ -44,6 +44,7 @@ class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             try {
                 String token = response.getBody().getString("token");
                 SyncController.sharedInstance().getAuthenticator().setCredentials(_email, token);
+                SyncController.sharedInstance().getAuthenticator().invalidateSyncDates();
                 NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_SUCCESS,
                                                                     token);
             }
@@ -52,6 +53,7 @@ class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             }
         } else {
             SyncController.sharedInstance().getAuthenticator().invalidateCredentials();
+            SyncController.sharedInstance().getAuthenticator().invalidateSyncDates();
             NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_FAIL,
                                                                 null);
         }

@@ -41,10 +41,6 @@ public class DetailViewController extends AppCompatActivity {
         
         processIntent(getIntent());
         
-        if(_currentNote != null) {
-            _noteTextView.setText(_currentNote.text());
-        }
-        
     }
     
     @Override
@@ -69,7 +65,8 @@ public class DetailViewController extends AppCompatActivity {
                 if(!i.getType().contains("text/plain")) { return; }
                 String data = i.getStringExtra(Intent.EXTRA_TEXT);
                 if(data == null) { return; }
-                _currentNote = new Note(data);
+                _currentNote = new Note("");
+                _noteTextView.setText(data);
                 break;
             
             case ACTION_CREATE:

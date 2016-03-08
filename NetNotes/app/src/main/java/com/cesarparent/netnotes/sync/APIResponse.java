@@ -18,21 +18,22 @@ public class APIResponse {
     public static final int UNAUTHORIZED =      401;
     public static final int SERVER_ERROR =      500;
     
-    private int _status;
-    
-    private JSONObject _body;
+    private int         _status;
+    private String      _time;
+    private JSONObject  _body;
     
     public APIResponse(int status) {
         _status = status;
         _body = null;
     }
     
-    public APIResponse(JSONObject data, int status) {
+    public APIResponse(JSONObject data, int status, String time) {
         _status = status;
         _body = data;
+        _time = time;
     }
     
-    public APIResponse(String data, int status) {
+    public APIResponse(String data, int status, String time) {
         _status = status;
         try {
             _body = new JSONObject(data);
@@ -41,6 +42,11 @@ public class APIResponse {
             _body = null;
             _status = DATA_ERROR;
         }
+        _time = time;
+    }
+    
+    public String getSyncTime() {
+        return _time;
     }
     
     public int getStatus() {

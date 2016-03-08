@@ -96,22 +96,24 @@ public class APIRequest {
     
     public APIResponse send() {
         BufferedReader reader = null;
+        String syncDate = Utils.JSONDate(new Date());
         try {
             _connection.connect();
             int code = _connection.getResponseCode();
-            if(code == 400 || code == 200) {
+            if(code == 200) {
                 String line, json = "";
-                InputStream is = code == 200 ? _connection.getInputStream() : _connection.getErrorStream();
+                InputStream is = _connection.getInputStream();
                 reader = new BufferedReader(new InputStreamReader(is));
                 while((line = reader.readLine()) != null) {
                     json += line + "\n";
                 }
-                return new APIResponse(json, code);
+                
+                return new APIResponse(json, code, syncDate);
             }
-            else if(code == 401) {
+            else if(code >= 400 && code < 500) {
                 return new APIResponse(APIResponse.UNAUTHORIZED);
             }
-            else if(code > 500) {
+            else if(code >= 500) {
                 return new APIResponse(APIResponse.SERVER_ERROR);
             }
             
