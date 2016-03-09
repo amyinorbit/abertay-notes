@@ -8,6 +8,12 @@
     <string name="loginmsg_failed">Invalid Credentials</string>
     <string name="loginmsg_success">Logged In</string>
     
+    <string name="status_success">Sync Finished</string>
+    <string name="status_fail_logged_out">Sync Failed: Not Logged In</string>
+    <string name="status_fail_bad_request">Sync Failed: Service Error</string>
+    <string name="status_fail_unauthorized">Sync Failed: Invalid Credentials</string>
+    <string name="status_fail_no_network">Sync Failed: Network Unavailable</string>
+    
     <string name="action_create">Create Note</string>
     <string name="action_edit">Edit Note</string>
     <string name="action_settings">Settings</string>
@@ -16,6 +22,7 @@
     <string name="action_save">Save</string>
     <string name="action_login">Log In</string>
     <string name="action_logout">Log Out</string>
+    <string name="action_try_again">Try Again</string>
     
     <string name="hint_email">email</string>
     <string name="hint_password">password</string>

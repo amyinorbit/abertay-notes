@@ -1,8 +1,13 @@
-package com.cesarparent.netnotes.sync;
+package com.cesarparent.netnotes.sync.tasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
 import com.cesarparent.netnotes.model.Model;
+import com.cesarparent.netnotes.sync.APIRequest;
+import com.cesarparent.netnotes.sync.APIResponse;
+import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.netnotes.sync.Sync;
+
 import org.json.JSONArray;
 
 /**
@@ -10,22 +15,24 @@ import org.json.JSONArray;
  * 
  * Base class for Asynchronous API synchronisation tasks
  */
-public abstract class SyncTask extends AsyncTask<Void, Void, Boolean> {
+public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
     
     private String _endpoint;
+    private Sync.ResultCallback _onResult;
     
-    public SyncTask(String endpoint) {
+    public SyncTask(String endpoint, Sync.ResultCallback onResult) {
         _endpoint = endpoint;
+        _onResult = onResult;
     }
 
     @Override
-    protected Boolean doInBackground(Void... params) {
+    protected Sync.Status doInBackground(Void... params) {
         
         String transaction = getTransactionID();
 
         JSONArray changes = getChanges(transaction);
         if(changes == null) {
-            return false;
+            return Sync.Status.SUCCESS;
         }
 
         // Send the request and get data back
@@ -38,20 +45,23 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Boolean> {
         if(res.getStatus() == APIResponse.UNAUTHORIZED) {
             Authenticator.invalidateCredentials();
             Authenticator.invalidateSyncDates();
-            return false;
+            return Sync.Status.FAIL_UNAUTHORIZED;
         }
         if(res.getStatus() != APIResponse.SUCCESS) {
-            return false;
+            return Sync.Status.FAIL_BAD_REQUEST;
         }
 
         // Parse the received JSON
-        return processResponseJSON(res);
+        return processResponseJSON(res) ? Sync.Status.SUCCESS : Sync.Status.FAIL_BAD_REQUEST;
     }
 
     @Override
-    protected void onPostExecute(Boolean refresh) {
-        if(refresh) {
+    protected void onPostExecute(Sync.Status status) {
+        if(status == Sync.Status.SUCCESS) {
             Model.refresh();
+        }
+        if(_onResult != null) {
+            _onResult.run(status);
         }
     }
     
@@ -62,7 +72,8 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Boolean> {
             return false;
         }
         setTransactionID(res.getTransactionID());
-        return updates.length() != 0 && processResponseData(updates, res.getTransactionID());
+        
+        return updates.length() == 0 || processResponseData(updates, res.getTransactionID());
     }
 
 

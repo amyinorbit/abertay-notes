@@ -16,15 +16,11 @@ import android.widget.TextView;
 
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
-import com.cesarparent.netnotes.sync.APIResponse;
-import com.cesarparent.netnotes.sync.APITaskDelegate;
 import com.cesarparent.netnotes.sync.Authenticator;
-import com.cesarparent.netnotes.sync.SyncController;
+import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Utils;
 
-import org.w3c.dom.Text;
-
-public class LoginViewController extends AppCompatActivity {
+public class LoginViewController extends AppCompatActivity implements Sync.ResultCallback {
     
     private ProgressDialog _progress;
     private TextView    _emailTextField;
@@ -96,8 +92,7 @@ public class LoginViewController extends AppCompatActivity {
     }
     
     public void logOut(View sender) {
-        Model.flushDeleted();
-        SyncController.sharedInstance().logOut();
+        Sync.logOut();
         showLogIn(true);
     }
     
@@ -105,32 +100,20 @@ public class LoginViewController extends AppCompatActivity {
         Utils.hideSoftKeyboard(this);
         _button.setEnabled(false);
         _progress = ProgressDialog.show(this, "Login In", "Please wait", true);
-        SyncController.sharedInstance().logIn(_emailTextField.getText().toString(),
-                                              _passwordTextField.getText().toString(),
-                                              new APITaskDelegate() {
-            @Override
-            public void taskDidReceiveResponse(APIResponse response) {
-                onLogin(response);
-            }
-        });
+        Sync.logIn(_emailTextField.getText().toString(),
+                   _passwordTextField.getText().toString(),
+                   this);
     }
 
-    
-    public void onLogin(APIResponse response) {
+    @Override
+    public void run(Sync.Status status) {
         _progress.dismiss();
         _button.setEnabled(true);
         Model.flushDeleted();
-        if(response.getStatus() == APIResponse.SUCCESS) {
-            Snackbar.make(_button, R.string.loginmsg_success, Snackbar.LENGTH_SHORT).show();
+        if(status == Sync.Status.SUCCESS) {
             showLoggedIn(true);
         } else {
             Snackbar.make(_button, R.string.loginmsg_failed, Snackbar.LENGTH_SHORT).show();
         }
-    }
-    
-    
-    public void onLoginCancel() {
-        _progress.dismiss();
-        _button.setEnabled(true);
     }
 }

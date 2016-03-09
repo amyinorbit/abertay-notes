@@ -1,9 +1,11 @@
-package com.cesarparent.netnotes.sync;
+package com.cesarparent.netnotes.sync.tasks;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import com.cesarparent.netnotes.model.DBController;
+import com.cesarparent.netnotes.sync.APIRequest;
+import com.cesarparent.netnotes.sync.Sync;
 
 import org.json.JSONArray;
 
@@ -16,8 +18,8 @@ public class SyncDeleteTask extends SyncTask {
 
     private static final String SELECT_SQL = "SELECT uniqueID FROM deleted WHERE seqID > ?";
     
-    public SyncDeleteTask() {
-        super(APIRequest.ENDPOINT_DELETE);
+    public SyncDeleteTask(Sync.ResultCallback onResult) {
+        super(APIRequest.ENDPOINT_DELETE, onResult);
     }
 
     @Override
@@ -34,7 +36,7 @@ public class SyncDeleteTask extends SyncTask {
 
     @Override
     protected boolean processResponseData(final JSONArray data, final String transaction) {
-        return DBController.sharedInstance().updateBlock(new DBController.UpdateBlock() {
+        return DBController.sharedInstance().updateBlock(new DBController.UpdateCallback() {
             @Override
             public boolean run(SQLiteDatabase db) {
                 for (int i = 0; i < data.length(); ++i) {

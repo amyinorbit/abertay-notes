@@ -4,6 +4,7 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;
 
@@ -33,15 +34,14 @@ public class Model {
     public static void deleteNoteWithUniqueID(String uniqueID) {
         Log.d("Model", "Deleting Note#" + uniqueID);
         
-        new DBController.Update("DELETE FROM note WHERE uniqueID = ?", new Runnable() {
+        new DBController.Update("DELETE FROM note WHERE uniqueID = ?", null).execute(uniqueID);
+        new DBController.Update("INSERT OR REPLACE INTO deleted (uniqueID, seqID) VALUES (?, ?)", new Runnable() {
             @Override
             public void run() {
                 refresh();
+                Sync.refresh();
             }
-        }).execute(uniqueID);
-        new DBController.Update("INSERT OR REPLACE INTO deleted (uniqueID, seqID) VALUES (?, ?)", null)
-                .execute(uniqueID,
-                         Authenticator.getDeleteTransactionID()+1);
+        }).execute(uniqueID, Authenticator.getDeleteTransactionID() + 1);
     }
     
     public static void getNoteWithUniqueID(String uniqueID, final NoteCompletionBlock done) {
@@ -67,6 +67,7 @@ public class Model {
             public void run() {
                 Log.d("Model", "Insert finished: " + note);
                 refresh();
+                Sync.refresh();
             }
         }).execute(note.uniqueID(),
                    note.text(),

@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -11,17 +13,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.NotesAdapter;
-import com.cesarparent.netnotes.sync.SyncController;
+import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;
 
-public class RootViewController extends AppCompatActivity {
+public class RootViewController extends AppCompatActivity implements Sync.ResultCallback {
     
     private NotesAdapter _adapter;
+    SwipeRefreshLayout _pullToRefresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,11 +34,21 @@ public class RootViewController extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        _pullToRefresh = (SwipeRefreshLayout) findViewById(R.id.pullRefreshView);
+        _pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
+        
         // Model and list view
-        Model.refresh();
-        ListView noteListView = (ListView) findViewById(R.id.notesListView);
+        refresh();
         _adapter = new NotesAdapter(this);
+        ListView noteListView = (ListView) findViewById(R.id.notesListView);
         noteListView.setAdapter(_adapter);
+        
+        
         
         noteListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -87,12 +101,11 @@ public class RootViewController extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case R.id.action_settings:
-                Intent i = new Intent(this, LoginViewController.class);
-                startActivity(i);
+                openLogin();
                 break;
             
             case R.id.action_sync:
-                SyncController.sharedInstance().triggerSync();
+                refresh();
                 break;
 
             default:
@@ -100,6 +113,29 @@ public class RootViewController extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void run(Sync.Status status) {
+        _pullToRefresh.setRefreshing(false);
+        if(status == Sync.Status.SUCCESS) { return; }
+        Snackbar message = Snackbar.make(_pullToRefresh, status.toString(), Snackbar.LENGTH_LONG);
+        if(status == Sync.Status.FAIL_UNAUTHORIZED || status == Sync.Status.FAIL_LOGGED_OUT) {
+            message.setAction(R.string.action_login, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openLogin();
+                }
+            });
+        } else {
+            message.setAction(R.string.action_try_again, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    refresh();
+                }
+            });
+        }
+        message.show();
     }
     
     public void startCreateNote(View sender) {
@@ -119,6 +155,16 @@ public class RootViewController extends AppCompatActivity {
     public void deleteNote(int position) {
         String uuid = Model.getHandleAtIndex(position).uniqueID;
         Model.deleteNoteWithUniqueID(uuid);
+    }
+    
+    public void refresh() {
+        _pullToRefresh.setRefreshing(true);
+        Sync.refresh(this);
+    }
+    
+    public void openLogin() {
+        Intent i = new Intent(this, LoginViewController.class);
+        startActivity(i);
     }
     
     public void onModelChange(Object notification) {

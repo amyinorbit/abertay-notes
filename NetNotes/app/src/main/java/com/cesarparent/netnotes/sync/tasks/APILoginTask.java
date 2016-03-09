@@ -1,7 +1,13 @@
-package com.cesarparent.netnotes.sync;
+package com.cesarparent.netnotes.sync.tasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.cesarparent.netnotes.model.Model;
+import com.cesarparent.netnotes.sync.APIRequest;
+import com.cesarparent.netnotes.sync.APIResponse;
+import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.Utils;
 import com.cesarparent.utils.NotificationCenter;
@@ -11,17 +17,17 @@ import org.json.JSONException;
  * Created by cesar on 04/03/2016.
  * 
  */
-class APILoginTask extends AsyncTask<String, Void, APIResponse> {
+public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
 
-    private APITaskDelegate _delegate;
-    private String          _email;
+    private Sync.ResultCallback _onResult;
+    private String              _email;
 
-    public APILoginTask(APITaskDelegate delegate) {
-        _delegate = delegate;
+    public APILoginTask(Sync.ResultCallback onResult) {
+        _onResult = onResult;
     }
 
     @Override
-    protected APIResponse doInBackground(String[] params) {
+    protected APIResponse doInBackground(String... params) {
         // This isn't a user-side error, so assert 2 or GTFO.
         if(params.length != 2) {
             Log.e("APILoginTask", "Invalid number of parameters given for Login");
@@ -36,24 +42,32 @@ class APILoginTask extends AsyncTask<String, Void, APIResponse> {
 
     @Override
     protected void onPostExecute(APIResponse response) {
+        Authenticator.invalidateSyncDates();
+        Model.flushDeleted();
         if(response.getStatus() == 200) {
             try {
                 String token = response.getBody().getString("token");
                 Authenticator.setCredentials(_email, token);
-                Authenticator.invalidateSyncDates();
                 NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_SUCCESS,
                                                                     token);
+                callback(Sync.Status.SUCCESS);
             }
             catch(JSONException e) {
+                callback(Sync.Status.FAIL_BAD_REQUEST);
                 Log.e("APILoginTask", "Invalid Response Format");
             }
         } else {
             Authenticator.invalidateCredentials();
-            Authenticator.invalidateSyncDates();
             NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_FAIL,
                                                                 null);
+            Log.e("APILoginTask", "Invalid Response Format");
+            callback(Sync.Status.FAIL_UNAUTHORIZED);
         }
-        _delegate.taskDidReceiveResponse(response);
-        Log.d("APILoginTask", "Login status: " + response.getStatus());
+    }
+    
+    private void callback(Sync.Status status) {
+        if(_onResult != null) {
+            _onResult.run(status);
+        }
     }
 }

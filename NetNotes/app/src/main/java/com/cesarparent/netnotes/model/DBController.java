@@ -17,7 +17,7 @@ import com.cesarparent.netnotes.CPApplication;
  */
 public class DBController extends SQLiteOpenHelper {
     
-    public interface UpdateBlock {
+    public interface UpdateCallback {
         boolean run(SQLiteDatabase db);
     }
 
@@ -98,7 +98,7 @@ public class DBController extends SQLiteOpenHelper {
         db.endTransaction();
     }
     
-    public boolean updateBlock(UpdateBlock block) {
+    public boolean updateBlock(UpdateCallback block) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         boolean result = block.run(db);
@@ -142,7 +142,7 @@ public class DBController extends SQLiteOpenHelper {
     public static class Fetch extends AsyncTask<String, Void, Cursor> {
         
         String          _query;
-        ResultBlock     _result;
+        ResultBlock _result;
         
         public Fetch(String query, ResultBlock result) {
             _query = query;

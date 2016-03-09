@@ -1,10 +1,12 @@
-package com.cesarparent.netnotes.sync;
+package com.cesarparent.netnotes.sync.tasks;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import com.cesarparent.netnotes.model.DBController;
 import com.cesarparent.netnotes.model.Note;
+import com.cesarparent.netnotes.sync.APIRequest;
+import com.cesarparent.netnotes.sync.Sync;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,8 +20,8 @@ public class SyncUpdateTask extends SyncTask {
     private static final String SELECT_SQL = "SELECT uniqueID, text, createDate, sortDate " +
                                              "FROM note WHERE seqID > ?";
     
-    public SyncUpdateTask() {
-        super(APIRequest.ENDPOINT_NOTES);
+    public SyncUpdateTask(Sync.ResultCallback onResult) {
+        super(APIRequest.ENDPOINT_NOTES, onResult);
     }
     
     @Override
@@ -42,7 +44,7 @@ public class SyncUpdateTask extends SyncTask {
     @Override
     protected boolean processResponseData(final JSONArray data, final String transaction) {
 
-        return DBController.sharedInstance().updateBlock(new DBController.UpdateBlock() {
+        return DBController.sharedInstance().updateBlock(new DBController.UpdateCallback() {
             @Override
             public boolean run(SQLiteDatabase db) {
                 for (int i = 0; i < data.length(); ++i) {
