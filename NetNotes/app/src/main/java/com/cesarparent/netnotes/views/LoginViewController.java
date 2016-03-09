@@ -39,7 +39,7 @@ public class LoginViewController extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        if(SyncController.sharedInstance().getAuthenticator().isLoggedIn()) {
+        if(Authenticator.isLoggedIn()) {
             showLoggedIn(false);
         } else {
             showLogIn(false);
@@ -49,12 +49,10 @@ public class LoginViewController extends AppCompatActivity {
     private void showLoggedIn(boolean fade) {
         smoothTransition(R.layout.view_logged_in, fade);
         
-        Authenticator auth = SyncController.sharedInstance().getAuthenticator();
-        
         _emailTextField = (TextView)findViewById(R.id.emailTextField);
         _button = (Button)findViewById(R.id.logInOutButton);
         _passwordTextField = null;
-        _emailTextField.setText(auth.getEmail());
+        _emailTextField.setText(Authenticator.getEmail());
         
         setUpToolbar();
     }
@@ -101,7 +99,7 @@ public class LoginViewController extends AppCompatActivity {
     }
     
     public void logOut(View sender) {
-        Model.sharedInstance().flushDeleted();
+        Model.flushDeleted();
         SyncController.sharedInstance().logOut();
         showLogIn(true);
     }
@@ -124,7 +122,7 @@ public class LoginViewController extends AppCompatActivity {
     public void onLogin(APIResponse response) {
         _progress.dismiss();
         _button.setEnabled(true);
-        Model.sharedInstance().flushDeleted();
+        Model.flushDeleted();
         if(response.getStatus() == APIResponse.SUCCESS) {
             Snackbar.make(_button, R.string.loginmsg_success, Snackbar.LENGTH_SHORT).show();
             showLoggedIn(true);

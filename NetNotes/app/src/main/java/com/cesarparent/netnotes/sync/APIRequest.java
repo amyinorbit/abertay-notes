@@ -32,27 +32,23 @@ public class APIRequest {
     
     private HttpURLConnection _connection;
     
-    public APIRequest(String endpoint, String method, String transaction) {
+    public APIRequest(String endpoint, String transaction) {
         try {
             URL url = new URL(CPApplication.string(R.string.api_location)+endpoint);
             _connection = (HttpURLConnection)url.openConnection();
             _connection.setDoOutput(false);
             _connection.setDoInput(true);
             _connection.setUseCaches(false);
-            _connection.setRequestMethod(method);
+            _connection.setRequestMethod("POST");
             _connection.setFixedLengthStreamingMode(0);
             Log.d("APIRequest", "Sync Date: "+transaction);
-            _connection.setRequestProperty("X-NetNotes-Time", transaction);
+            _connection.setRequestProperty("X-NetNotes-Transaction", transaction);
             _connection.setRequestProperty("X-NetNotes-DeviceID", CPApplication.getDeviceID());
             _connection.setRequestProperty("Content-Length", "0");
         }
         catch(Exception e) {
             System.exit(2);
         }
-    }
-    
-    public APIRequest(String endpoint) {
-        this(endpoint, "POST", Utils.JSONDate(new Date(0)));
     }
     
     public void setAuthtorization(String token) {
@@ -97,7 +93,6 @@ public class APIRequest {
     
     public APIResponse send() {
         BufferedReader reader = null;
-        String syncDate = Utils.JSONDate(new Date());
         try {
             _connection.connect();
             int code = _connection.getResponseCode();
@@ -109,10 +104,15 @@ public class APIRequest {
                     json += line + "\n";
                 }
                 
-                return new APIResponse(json, code, syncDate);
+                String transaction = _connection.getHeaderField("X-NetNotes-Transaction");
+                
+                return new APIResponse(json, code, transaction);
             }
-            else if(code >= 400 && code < 500) {
+            else if(code == 401) {
                 return new APIResponse(APIResponse.UNAUTHORIZED);
+            }
+            else if(code > 401 && code < 500) {
+                return new APIResponse(APIResponse.BAD_REQUEST);
             }
             else if(code >= 500) {
                 return new APIResponse(APIResponse.SERVER_ERROR);

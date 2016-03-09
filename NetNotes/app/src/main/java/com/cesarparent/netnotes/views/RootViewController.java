@@ -30,8 +30,10 @@ public class RootViewController extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Model and list view
+        Model.refresh();
         ListView noteListView = (ListView) findViewById(R.id.notesListView);
-        _adapter = new NotesAdapter(this, Model.sharedInstance());
+        _adapter = new NotesAdapter(this);
         noteListView.setAdapter(_adapter);
         
         noteListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -107,7 +109,7 @@ public class RootViewController extends AppCompatActivity {
     }
     
     public void openNote(int position) {
-        String uuid = Model.sharedInstance().getHandleAtIndex(position).uniqueID;
+        String uuid = Model.getHandleAtIndex(position).uniqueID;
         Intent i = new Intent(this, DetailViewController.class);
         i.setAction(DetailViewController.ACTION_EDIT);
         i.putExtra(DetailViewController.EXTRA_UUID, uuid);
@@ -115,8 +117,8 @@ public class RootViewController extends AppCompatActivity {
     }
     
     public void deleteNote(int position) {
-        String uuid = Model.sharedInstance().getHandleAtIndex(position).uniqueID;
-        Model.sharedInstance().deleteNoteWithUniqueID(uuid);
+        String uuid = Model.getHandleAtIndex(position).uniqueID;
+        Model.deleteNoteWithUniqueID(uuid);
     }
     
     public void onModelChange(Object notification) {

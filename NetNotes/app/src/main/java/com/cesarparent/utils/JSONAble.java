@@ -1,4 +1,4 @@
-package com.cesarparent.netnotes.sync;
+package com.cesarparent.utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;

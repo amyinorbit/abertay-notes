@@ -19,18 +19,12 @@ public class APIResponse {
     public static final int SERVER_ERROR =      500;
     
     private int         _status;
-    private String      _time;
+    private String _transaction;
     private JSONObject  _body;
     
     public APIResponse(int status) {
         _status = status;
         _body = null;
-    }
-    
-    public APIResponse(JSONObject data, int status, String time) {
-        _status = status;
-        _body = data;
-        _time = time;
     }
     
     public APIResponse(String data, int status, String time) {
@@ -42,11 +36,11 @@ public class APIResponse {
             _body = null;
             _status = DATA_ERROR;
         }
-        _time = time;
+        _transaction = time;
     }
     
-    public String getSyncTime() {
-        return _time;
+    public String getTransactionID() {
+        return _transaction;
     }
     
     public int getStatus() {
@@ -55,5 +49,14 @@ public class APIResponse {
     
     public JSONObject getBody() {
         return _body;
+    }
+    
+    public JSONArray getChangeSet() {
+        try {
+            return _body.getJSONArray("changes");
+        }
+        catch(JSONException e) {
+            return null;
+        }
     }
 }

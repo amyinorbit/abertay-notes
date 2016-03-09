@@ -49,7 +49,7 @@ public class DetailViewController extends AppCompatActivity {
         if(_currentNote == null) { return; }
         if(_currentNote.text().equals(_noteTextView.getText().toString())) { return; }
         _currentNote.setText(_noteTextView.getText().toString());
-        Model.sharedInstance().addNote(_currentNote);
+        Model.addNote(_currentNote);
     }
     
     private void processIntent(Intent i) {
@@ -76,7 +76,7 @@ public class DetailViewController extends AppCompatActivity {
             case ACTION_EDIT:
                 String uuid = i.getStringExtra(EXTRA_UUID);
                 if(uuid == null) { return; }
-                Model.sharedInstance().getNoteWithUniqueID(uuid, new Model.NoteCompletionBlock() {
+                Model.getNoteWithUniqueID(uuid, new Model.NoteCompletionBlock() {
                     @Override
                     public void run(Note note) {
                         _currentNote = note;
@@ -111,7 +111,7 @@ public class DetailViewController extends AppCompatActivity {
                 break;
             
             case R.id.action_delete:
-                Model.sharedInstance().deleteNoteWithUniqueID(_currentNote.uniqueID());
+                Model.deleteNoteWithUniqueID(_currentNote.uniqueID());
                 NavUtils.navigateUpFromSameTask(this);
                 _currentNote = null;
                 finish();

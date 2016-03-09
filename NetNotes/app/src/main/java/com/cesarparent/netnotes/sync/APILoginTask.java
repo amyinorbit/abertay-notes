@@ -33,7 +33,7 @@ class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             System.exit(2);
         }
         _email = params[0];
-        APIRequest request = new APIRequest(APIRequest.ENDPOINT_LOGIN, "POST", Utils.JSONDate(new Date()));
+        APIRequest request = new APIRequest(APIRequest.ENDPOINT_LOGIN, "0");
         request.setAuthtorization(Utils.HTTPBasicAuth(params[0], params[1]));
         return request.send();
     }
@@ -43,8 +43,8 @@ class APILoginTask extends AsyncTask<String, Void, APIResponse> {
         if(response.getStatus() == 200) {
             try {
                 String token = response.getBody().getString("token");
-                SyncController.sharedInstance().getAuthenticator().setCredentials(_email, token);
-                SyncController.sharedInstance().getAuthenticator().invalidateSyncDates();
+                Authenticator.setCredentials(_email, token);
+                Authenticator.invalidateSyncDates();
                 NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_SUCCESS,
                                                                     token);
             }
@@ -52,8 +52,8 @@ class APILoginTask extends AsyncTask<String, Void, APIResponse> {
                 Log.e("APILoginTask", "Invalid Response Format");
             }
         } else {
-            SyncController.sharedInstance().getAuthenticator().invalidateCredentials();
-            SyncController.sharedInstance().getAuthenticator().invalidateSyncDates();
+            Authenticator.invalidateCredentials();
+            Authenticator.invalidateSyncDates();
             NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_FAIL,
                                                                 null);
         }

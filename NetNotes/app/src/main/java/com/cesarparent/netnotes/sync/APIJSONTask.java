@@ -3,11 +3,10 @@ package com.cesarparent.netnotes.sync;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.cesarparent.netnotes.model.Note;
+import com.cesarparent.utils.JSONAble;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Created by cesar on 04/03/2016.
@@ -30,7 +29,7 @@ class APIJSONTask extends AsyncTask<Object, Void, APIResponse> {
     @Override
     protected APIResponse doInBackground(Object... params) {
         
-        APIRequest request = new APIRequest(_endpoint, "POST", _transaction);
+        APIRequest request = new APIRequest(_endpoint, _transaction);
         request.setAuthtorization(_token);
         // Do stuff with notes.
         JSONArray body = new JSONArray();

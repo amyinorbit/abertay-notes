@@ -16,13 +16,17 @@ import com.cesarparent.netnotes.CPApplication;
  * DatabaseHelper extends SQLiteOpenHelper for opening/closing databases.
  */
 public class DBController extends SQLiteOpenHelper {
+    
+    public interface UpdateBlock {
+        void run(SQLiteDatabase db);
+    }
 
-    public interface onResult {
+    public interface ResultBlock {
         void run(Cursor c);
     }
     
     // Basic DatabaseHelper data
-    public static final int kDBVersion = 1;
+    public static final int kDBVersion = 2;
     public static final String kDBName = "netnotes.db";
     
     private static final String SQL_CREATE_NOTE = 
@@ -30,12 +34,13 @@ public class DBController extends SQLiteOpenHelper {
             "uniqueID   CHAR(36) PRIMARY KEY,"+
             "text       TEXT NOT NULL DEFAULT \"\","+
             "createDate DATETIME,"+
-            "sortDate   DATETIME)";
+            "sortDate   DATETIME," + 
+            "seqID      BIGINT UNSIGNED)";
     
     private static final String SQL_CREATE_DELETE =
             "CREATE TABLE deleted ("+
             "uniqueID   CHAR(36) PRIMARY KEY,"+
-            "deleteDate DATETIME)";
+            "seqID      BIGINT UNSIGNED)";
     
     private static final String[] SQL_CREATE = {SQL_CREATE_NOTE, SQL_CREATE_DELETE};
     
@@ -80,6 +85,26 @@ public class DBController extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
     
+    // Commodity functions
+    
+    public Cursor fetch(String query, String... params) {
+        return getReadableDatabase().rawQuery(query, params);
+    }
+    
+    public void update(String query, Object... params) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        db.execSQL(query, params);
+        db.endTransaction();
+    }
+    
+    public void updateBlock(UpdateBlock block) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        block.run(db);
+        db.endTransaction();
+    }
+    
     // AsyncTask stuff
     
     public static class Update extends AsyncTask<Object, Void, Void> {
@@ -113,9 +138,9 @@ public class DBController extends SQLiteOpenHelper {
     public static class Fetch extends AsyncTask<String, Void, Cursor> {
         
         String          _query;
-        onResult        _result;
+        ResultBlock     _result;
         
-        public Fetch(String query, onResult result) {
+        public Fetch(String query, ResultBlock result) {
             _query = query;
             _result = result;
         }

@@ -1,6 +1,8 @@
 package com.cesarparent.netnotes.model;
 
-import com.cesarparent.netnotes.sync.JSONAble;
+import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.utils.JSONAble;
+import com.cesarparent.utils.SQLObject;
 import com.cesarparent.utils.Utils;
 
 import org.json.JSONException;
@@ -18,9 +20,11 @@ import java.util.UUID;
  * Represents a note, that can be stored in the application's database and synchronised
  * with the server.
  */
-public class Note implements JSONAble {
+public class Note implements JSONAble, SQLObject {
     
-    //public static final String 
+    //public static final String
+    
+    private static final String _COLUMNS = "uniqueID, text, createDate, sortDate, seqID";
 
     private String  _text;
     private Date    _creationDate;
@@ -67,6 +71,40 @@ public class Note implements JSONAble {
         obj.put("createDate", format.format(_creationDate));
         obj.put("sortDate", format.format(_sortDate));
         return obj;
+    }
+
+
+    // SQLObject impementation
+
+    @Override
+    public String getTableName() {
+        return "note";
+    }
+
+    @Override
+    public String getTypeTransactionID() {
+        return Authenticator.getUpdateTransactionID();
+    }
+
+    @Override
+    public String getDatabaseColumns() {
+        return _COLUMNS;
+    }
+    
+    @Override
+    public String getDatabasePlaceholders() {
+        return "?, ?, ?, ?, ?";
+    }
+
+    @Override
+    public Object[] getDatabaseValues() {
+        return new Object[] {
+                _uniqueID,
+                _text,
+                Utils.JSONDate(_creationDate),
+                Utils.JSONDate(_sortDate),
+                getTypeTransactionID()
+        };
     }
     
     public NoteHandle getHandle() {

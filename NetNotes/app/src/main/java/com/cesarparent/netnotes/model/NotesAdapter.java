@@ -18,27 +18,25 @@ import org.w3c.dom.Text;
  */
 public class NotesAdapter extends BaseAdapter {
     
-    private Model _model;
     private LayoutInflater _inflater;
     
-    public NotesAdapter(@NonNull Context context, @NonNull Model model) {
-        _model = model;
+    public NotesAdapter(@NonNull Context context) {
         _inflater = LayoutInflater.from(context);
     }
     
     @Override
     public int getCount() {
-        return _model.getNotesCount();
+        return Model.getNotesCount();
     }
 
     @Override
     public Object getItem(int position) {
-        return _model.getHandleAtIndex(position).title;
+        return Model.getHandleAtIndex(position).title;
     }
 
     @Override
     public long getItemId(int position) {
-        return _model.getHandleAtIndex(position).hashCode();
+        return Model.getHandleAtIndex(position).hashCode();
     }
 
     @Override
@@ -48,7 +46,7 @@ public class NotesAdapter extends BaseAdapter {
             view = _inflater.inflate(R.layout.view_note_list_item, null);
         }
         TextView titleView = (TextView)view.findViewById(R.id.noteTitle);
-        titleView.setText(_model.getHandleAtIndex(position).title);
+        titleView.setText(Model.getHandleAtIndex(position).title);
         return view;
     }
 }
