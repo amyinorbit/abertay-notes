@@ -2,14 +2,10 @@ package com.cesarparent.netnotes.sync;
 
 import android.os.AsyncTask;
 import android.util.Log;
-
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.Utils;
 import com.cesarparent.utils.NotificationCenter;
-
 import org.json.JSONException;
-
-import java.util.Date;
 
 /**
  * Created by cesar on 04/03/2016.

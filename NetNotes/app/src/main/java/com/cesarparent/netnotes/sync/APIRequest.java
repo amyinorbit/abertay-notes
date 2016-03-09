@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.R;
-import com.cesarparent.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,7 +16,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Date;
 
 /**
  * Created by cesar on 03/03/2016.

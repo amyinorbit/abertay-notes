@@ -33,12 +33,14 @@ public class SyncController {
     
     public void logIn(String email, String password, APITaskDelegate delegate) {
         APILoginTask task = new APILoginTask(delegate);
+        Authenticator.invalidateSyncDates();
         Model.flushDeleted();
         task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, email, password);
     }
     
     public void logOut() {
         Authenticator.invalidateCredentials();
+        Authenticator.invalidateSyncDates();
         Model.flushDeleted();
     }
     

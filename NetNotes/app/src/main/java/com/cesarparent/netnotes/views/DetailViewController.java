@@ -9,10 +9,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
-
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.Note;
@@ -21,7 +18,6 @@ public class DetailViewController extends AppCompatActivity {
     
     public static final String ACTION_CREATE = "com.cesarparent.netnotes.action.CREATE";
     public static final String ACTION_EDIT = "com.cesarparent.netnotes.action.EDIT";
-    
     public static final String EXTRA_UUID = "com.cesarparent.netnotes.extra.UUID";
     
     private EditText _noteTextView;

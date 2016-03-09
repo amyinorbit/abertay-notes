@@ -26,7 +26,7 @@ public class DBController extends SQLiteOpenHelper {
     }
     
     // Basic DatabaseHelper data
-    public static final int kDBVersion = 2;
+    public static final int kDBVersion = 1;
     public static final String kDBName = "netnotes.db";
     
     private static final String SQL_CREATE_NOTE = 
@@ -76,7 +76,7 @@ public class DBController extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         for(String query : SQL_DROP) {
             db.execSQL(query);
-        };
+        }
         onCreate(db);
     }
 

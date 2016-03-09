@@ -9,6 +9,8 @@ import org.json.JSONArray;
 
 /**
  * Created by cesar on 09/03/2016.
+ * 
+ * 
  */
 public class SyncDeleteTask extends SyncTask {
 

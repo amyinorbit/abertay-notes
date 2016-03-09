@@ -2,14 +2,10 @@ package com.cesarparent.netnotes.model;
 
 import com.cesarparent.utils.JSONAble;
 import com.cesarparent.utils.Utils;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -21,8 +17,6 @@ import java.util.UUID;
 public class Note implements JSONAble {
     
     //public static final String
-    
-    private static final String _COLUMNS = "uniqueID, text, createDate, sortDate, seqID";
 
     private String  _text;
     private Date    _creationDate;
@@ -51,9 +45,8 @@ public class Note implements JSONAble {
 
     public Note(JSONObject obj) throws JSONException, ParseException {
         _text = obj.getString("text");
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZZZ", Locale.UK);
-        _creationDate = format.parse(obj.getString("createDate"));
-        _sortDate = format.parse(obj.getString("sortDate"));
+        _creationDate = Utils.dateFromJSON(obj.getString("createDate"));
+        _sortDate = Utils.dateFromJSON(obj.getString("sortDate"));
         _uniqueID = obj.getString("uniqueID");
     }
     
@@ -63,26 +56,15 @@ public class Note implements JSONAble {
 
     public JSONObject toJSON() throws JSONException {
         JSONObject obj = new JSONObject();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZZZ", Locale.UK);
         obj.put("uniqueID", _uniqueID);
         obj.put("text", _text);
-        obj.put("createDate", format.format(_creationDate));
-        obj.put("sortDate", format.format(_sortDate));
+        obj.put("createDate", creationDate());
+        obj.put("sortDate", sortDate());
         return obj;
     }
     
     public NoteHandle getHandle() {
         return new NoteHandle(_uniqueID, _text.substring(0, 128)+"…");
-    }
-
-    public Note detachedCopy() {
-        Note copy = new Note(this._text);
-        copy._sortDate = (Date)_sortDate.clone();
-        copy._creationDate = (Date)_creationDate.clone();
-        copy._text = _text;
-        copy._uniqueID = _uniqueID;
-
-        return copy;
     }
 
     public String uniqueID() {

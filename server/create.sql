@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS note (
     createDate          DATETIME NOT NULL,
     sortDate            DATETIME NOT NULL,
     seqID               BIGINT NOT NULL,
-    CONSTRAINT note_pk PRIMARY KEY (uniqueID),
+    CONSTRAINT note_pk PRIMARY KEY (userID, uniqueID),
     CONSTRAINT note_user_fk FOREIGN KEY (userID) REFERENCES user(uniqueID) ON DELETE CASCADE
 );
 

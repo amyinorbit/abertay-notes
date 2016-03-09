@@ -9,5 +9,5 @@ public abstract class APITaskDelegate {
     
     public abstract void taskDidReceiveResponse(APIResponse response);
     
-    public void taskWasCancelled() {};
+    public void taskWasCancelled() {}
 }

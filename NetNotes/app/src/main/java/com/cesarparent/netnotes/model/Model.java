@@ -6,7 +6,6 @@ import android.util.Log;
 import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;
-import com.cesarparent.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -79,6 +78,7 @@ public class Model {
     
     public static void flushDeleted() {
         new DBController.Update("DELETE FROM deleted", null).execute();
+        new DBController.Update("UPDATE note SET seqID = 1", null).execute();
     }
     
     public static void refresh() {
