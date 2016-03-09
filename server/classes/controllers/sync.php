@@ -6,11 +6,11 @@ class sync {
     
     private static $insert = <<<EOT
     INSERT INTO `note`
-    (`userID`, `uniqueID`, `text`, `sortDate`, `createDate`, `syncDate`)
-    VALUES (:userID, :uniqueID, :text, :sortDate, :createDate, :syncDate)
+    (`userID`, `uniqueID`, `text`, `sortDate`, `createDate`, `seqID`)
+    VALUES (:userID, :uniqueID, :text, :sortDate, :createDate, :seqID)
     ON DUPLICATE KEY UPDATE
     `text` = IF(sortDate < VALUES(sortDate), VALUES(text), text),
-    `syncDate` = IF(sortDate < VALUES(sortDate), VALUES(syncDate), syncDate),
+    `seqID` = IF(sortDate < VALUES(sortDate), VALUES(seqID), seqID),
     `sortDate` = IF(sortDate < VALUES(sortDate), VALUES(sortDate), sortDate);
 EOT;
 
@@ -23,7 +23,8 @@ EOT;
     FROM `note`
     WHERE
         `userID` = :userID AND
-        `syncDate` > :syncDate;
+        `seqID` > :oldSeqID AND
+        `seqID` <= :newSeqID;
 EOT;
 
     private static $delete = <<<EOT
@@ -32,14 +33,21 @@ EOT;
 EOT;
 
     private static $insertDeleted = <<<EOT
-    INSERT INTO `deletedNote`
-    (`userID`, `uniqueID`, `deleteDate`)
-    VALUES (:userID, :uniqueID, :deleteDate);
+    INSERT IGNORE INTO `deletedNote`
+    (`userID`, `uniqueID`, `seqID`)
+    VALUES (:userID, :uniqueID, :seqID);
 EOT;
 
     private static $selDelete = <<<EOT
-    SELECT `uniqueID` FROM `deletedNote` WHERE `userID` = :userID AND `deleteDate` > :deleteDate;
+    SELECT `uniqueID` FROM `deletedNote`
+    WHERE `userID` = :userID AND
+    `seqID` > :oldSeqID AND
+    `seqID` <= :newSeqID;
 EOT;
+    
+    private static $selID = "SELECT `%s` as 'id' FROM `user` WHERE `uniqueID` = :userID;";
+    
+    private static $incID = "UPDATE `user` SET `%s` = :seqID WHERE `uniqueID` = :userID;";
             
     private static $NoteFields = ["uniqueID", "text", "sortDate", "createDate"];
     
@@ -53,34 +61,45 @@ EOT;
      */
     public function Update($req, $res) {
         $db = \app::Connection();
+        $since = $req->Header("X-NetNotes-Transaction", 0);
+        $newID = $this->UpdateSeqID(\app::UserID());
+        $seqID = $newID;
         
-        $clientTime = $req->Header("X-NetNotes-Time", \utils::Date(0));
         $transaction = json_decode($req->Body(), true);
         if(is_null($transaction) || !is_array($transaction)) {
             return $this->_InvalidFormat($res);
         }
-        
-        $db->beginTransaction();
-        $stmt = $db->prepare(self::$insert);
-        foreach($transaction as $note) {
-            if($this->_ValidateNote($note)) {
-                return $this->_InvalidFormat();
+        if(count($transaction) > 0) {
+            $newID += 1;
+            $db->beginTransaction();
+            $stmt = $db->prepare(self::$insert);
+            foreach($transaction as $note) {
+                if($this->_ValidateNote($note)) {
+                    $db->rollBack();
+                    return $this->_InvalidFormat();
+                }
+                $stmt->execute([
+                    "userID" => \app::UserID(),
+                    "uniqueID" => $note["uniqueID"],
+                    "text" => $note["text"],
+                    "sortDate" => $note["sortDate"],
+                    "createDate" => $note["createDate"],
+                    "seqID" => $newID,
+                ]);
             }
-            $stmt->execute([
-                "userID" => \app::UserID(),
-                "uniqueID" => $note["uniqueID"],
-                "text" => $note["text"],
-                "sortDate" => $note["sortDate"],
-                "createDate" => $note["createDate"],
-                "syncDate" => \utils::Date(),
-            ]);
+            $this->SetUpdateSeqID(\app::UserID(), $newID);
+            $db->commit();
         }
-        $db->commit();
         
         $stmt = $db->prepare(self::$selInsert);
-        if(!$stmt->execute(["userID" => \app::UserID(), "syncDate" => $clientTime])) {
+        if(!$stmt->execute([
+            "userID" => \app::UserID(),
+            "oldSeqID" => $since,
+            "newSeqID" => $seqID
+        ])) {
             throw new \Exception("Database Error");
         }
+        $res->SetHeader("X-NetNotes-Transaction", strval($newID));
         $res->SetBody(["changes" => $stmt->fetchAll(\PDO::FETCH_ASSOC)]);
         $res->SetStatusCode(200);
     }
@@ -91,39 +110,86 @@ EOT;
      */
     public function Delete($req, $res) {
         $db = \app::Connection();
+        $since = $req->Header("X-NetNotes-Transaction", 0);
+        $newID = $this->DeleteSeqID(\app::UserID());
+        $seqID = $newID;
         
-        $clientTime = $req->Header("X-NetNotes-Time", \utils::Date(0));
         $transaction = json_decode($req->Body(), true);
         if(is_null($transaction) || !is_array($transaction)) {
             return $this->_InvalidFormat($res);
         }
         
-        $db->beginTransaction();
-        $stmt1 = $db->prepare(self::$delete);
-        $stmt2 = $db->prepare(self::$insertDeleted);
-        foreach($transaction as $uuid) {
-            if(!is_string($uuid)) {
-                return $this->_InvalidFormat($res);
+        if(count($transaction) > 0) {
+            $newID += 1;
+            $db->beginTransaction();
+            $stmt1 = $db->prepare(self::$delete);
+            $stmt2 = $db->prepare(self::$insertDeleted);
+            foreach($transaction as $uuid) {
+                if(!is_string($uuid)) {
+                    return $this->_InvalidFormat($res);
+                }
+                $stmt1->execute(["userID" => \app::UserID(), "uniqueID" => $uuid]);
+                $stmt2->execute([
+                    "userID" => \app::UserID(),
+                    "uniqueID" => $uuid,
+                    "seqID" => $newID
+                ]);
             }
-            $stmt1->execute(["userID" => \app::UserID(), "uniqueID" => $uuid]);
-            $stmt2->execute([
-                "userID" => \app::UserID(),
-                "uniqueID" => $uuid,
-                "deleteDate" => \utils::Date()
-            ]);
+            $this->SetDeleteSeqID(\app::UserID(), $newID);
+            $db->commit();
         }
-        $db->commit();
         
         $stmt = $db->prepare(self::$selDelete);
-        if(!$stmt->execute(["userID" => \app::UserID(), "deleteDate" => $clientTime])) {
+        if(!$stmt->execute([
+            "userID" => \app::UserID(),
+            "oldSeqID" => $since,
+            "newSeqID" => $seqID
+        ])) {
             throw new \Exception("Database Error");
         }
         $deleted = [];
         while($result = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             array_push($deleted, $result["uniqueID"]);
         }
+        
+        $res->SetHeader("X-NetNotes-Transaction", strval($newID));
         $res->SetBody(["changes" => $deleted]);
         $res->SetStatusCode(200);
+    }
+    
+    private function UpdateSeqID($userID) {
+        return $this->ID("updateSeqID", $userID);
+    }
+    
+    private function DeleteSeqID($userID) {
+        return $this->ID("deleteSeqID", $userID);
+    }
+    
+    private function SetUpdateSeqID($userID, $id) {
+        $this->SetID("updateSeqID", $id, $userID);
+    }
+    
+    private function SetDeleteSeqID($userID, $id) {
+        $this->SetID("deleteSeqID", $id, $userID);
+    }
+    
+    private function ID($field, $userID) {
+        $db = \app::Connection();
+        $get = $db->prepare(sprintf(self::$selID, $field));
+        $get->execute(["userID" => $userID]);
+        $result = $get->fetch(\PDO::FETCH_ASSOC);
+        if(!$result) {
+            throw new \Exception("Error fetching database sequence ID");
+        }
+        return $result["id"];
+    }
+    
+    private function SetID($field, $id, $userID) {
+        $db = \app::Connection();
+        $set = $db->prepare(sprintf(self::$incID, $field));
+        if(!$set->execute(["userID" => $userID, "seqID" => $id])) {
+            throw new \Exception("Error setting database sequence ID");
+        }
     }
     
     private function _InvalidFormat($res) {
@@ -133,6 +199,5 @@ EOT;
     
     public function _ValidateNote($note) {
         if(!is_array($note)) { return false; }
-        
     }
 }
