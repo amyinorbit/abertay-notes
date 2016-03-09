@@ -1,34 +1,27 @@
 package com.cesarparent.netnotes.sync;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.util.Log;
-
-import com.cesarparent.netnotes.model.DBController;
 import com.cesarparent.netnotes.model.Model;
-import com.cesarparent.netnotes.model.Note;
-import com.cesarparent.utils.JSONAble;
-import com.cesarparent.utils.SQLObject;
-
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.text.ParseException;
 
 /**
  * Created by cesar on 09/03/2016.
  * 
  * Base class for Asynchronous API synchronisation tasks
  */
-public abstract class SyncTask<T extends SQLObject & JSONAble> extends AsyncTask<Void, Void, Boolean> {
-    private static final String SELECT_SQL = "SELECT uniqueID, text, createDate, sortDate " +
-            "FROM note WHERE seqID > ?";
+public abstract class SyncTask extends AsyncTask<Void, Void, Boolean> {
+    
+    private String _endpoint;
+    
+    public SyncTask(String endpoint) {
+        _endpoint = endpoint;
+    }
 
     @Override
     protected Boolean doInBackground(Void... params) {
-
-        String transaction = Authenticator.getUpdateTransactionID();
+        
+        String transaction = getTransactionID();
 
         JSONArray changes = getChanges(transaction);
         if(changes == null) {
@@ -36,12 +29,12 @@ public abstract class SyncTask<T extends SQLObject & JSONAble> extends AsyncTask
         }
 
         // Send the request and get data back
-        APIRequest req = new APIRequest(APIRequest.ENDPOINT_NOTES, transaction);
-        req.putData(changes);
+        APIRequest req = new APIRequest(_endpoint, transaction);
         req.setAuthtorization(Authenticator.getAuthToken());
+        req.putData(changes);
         final APIResponse res = req.send();
 
-        // If Unauthorised, invalidate credientials
+        // If Unauthorised, invalidate credentials
         if(res.getStatus() == APIResponse.UNAUTHORIZED) {
             Authenticator.invalidateCredentials();
             Authenticator.invalidateSyncDates();
@@ -52,7 +45,7 @@ public abstract class SyncTask<T extends SQLObject & JSONAble> extends AsyncTask
         }
 
         // Parse the received JSON
-        return processResponse(res);
+        return processResponseJSON(res);
     }
 
     @Override
@@ -61,37 +54,36 @@ public abstract class SyncTask<T extends SQLObject & JSONAble> extends AsyncTask
             Model.refresh();
         }
     }
-
-    protected abstract JSONArray getChanges(String transaction);
     
-    protected abstract T create(JSONObject obj);
-    
-    private boolean processResponse(final APIResponse res) {
+    private boolean processResponseJSON(final APIResponse res) {
         final JSONArray updates = res.getChangeSet();
-        if(updates == null) {
+        if (updates == null) {
             Log.e("SyncUpdateTask", "Invalid response payload");
             return false;
         }
-        Authenticator.setUpdateTransactionID(res.getTransactionID());
-        if(updates.length() == 0) { return false; }
-        DBController.sharedInstance().updateBlock(new DBController.UpdateBlock() {
-            @Override
-            public void run(SQLiteDatabase db) {
-                for(int i = 0; i < updates.length(); ++i) {
-                    try {
-                        T n = create(updates.getJSONObject(i));
-                        db.execSQL("INSERT OR REPLACE INTO note" +
-                                           "(uniqueID, text, createDate, sortDate, seqID)" +
-                                           "VALUES (?, ?, ?, ?, ?)",
-                                   n.getDatabaseValues());
-                        db.setTransactionSuccessful();
-                    }
-                    catch(Exception e) {
-                        Log.e("SyncUpdateTask", "Error parsing response: "+e.getMessage());
-                    }
-                }
-            }
-        });
-        return true;
+        setTransactionID(res.getTransactionID());
+        return updates.length() != 0 && processResponseData(updates, res.getTransactionID());
     }
+
+
+
+    private String getTransactionID() {
+        if(_endpoint.equals(APIRequest.ENDPOINT_NOTES)) {
+            return Authenticator.getUpdateTransactionID();
+        } else {
+            return Authenticator.getDeleteTransactionID();
+        }
+    }
+
+    private void setTransactionID(String id) {
+        if(_endpoint.equals(APIRequest.ENDPOINT_NOTES)) {
+            Authenticator.setUpdateTransactionID(id);
+        } else {
+            Authenticator.setDeleteTransactionID(id);
+        }
+    }
+
+    protected abstract JSONArray getChanges(String transaction);
+
+    protected abstract boolean processResponseData(JSONArray data, String transaction);
 }

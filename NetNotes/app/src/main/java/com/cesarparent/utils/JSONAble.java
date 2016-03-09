@@ -9,5 +9,5 @@ import org.json.JSONObject;
  * Implemented by objects that can be exported to JSON
  */
 public interface JSONAble {
-    JSONObject toJSON() throws JSONException;
+    Object toJSON() throws JSONException;
 }

@@ -1,5 +1,7 @@
 package com.cesarparent.netnotes.sync;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,6 +33,7 @@ public class APIResponse {
         _status = status;
         try {
             _body = new JSONObject(data);
+            Log.d("APIResponse", "Received Payload: " + _body);
         }
         catch(JSONException e) {
             _body = null;

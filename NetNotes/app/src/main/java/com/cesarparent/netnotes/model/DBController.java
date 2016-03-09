@@ -18,7 +18,7 @@ import com.cesarparent.netnotes.CPApplication;
 public class DBController extends SQLiteOpenHelper {
     
     public interface UpdateBlock {
-        void run(SQLiteDatabase db);
+        boolean run(SQLiteDatabase db);
     }
 
     public interface ResultBlock {
@@ -98,11 +98,15 @@ public class DBController extends SQLiteOpenHelper {
         db.endTransaction();
     }
     
-    public void updateBlock(UpdateBlock block) {
+    public boolean updateBlock(UpdateBlock block) {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
-        block.run(db);
+        boolean result = block.run(db);
+        if(result) {
+            db.setTransactionSuccessful();
+        }
         db.endTransaction();
+        return result;
     }
     
     // AsyncTask stuff

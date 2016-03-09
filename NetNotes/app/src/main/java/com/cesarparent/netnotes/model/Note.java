@@ -1,8 +1,6 @@
 package com.cesarparent.netnotes.model;
 
-import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.utils.JSONAble;
-import com.cesarparent.utils.SQLObject;
 import com.cesarparent.utils.Utils;
 
 import org.json.JSONException;
@@ -20,7 +18,7 @@ import java.util.UUID;
  * Represents a note, that can be stored in the application's database and synchronised
  * with the server.
  */
-public class Note implements JSONAble, SQLObject {
+public class Note implements JSONAble {
     
     //public static final String
     
@@ -72,40 +70,6 @@ public class Note implements JSONAble, SQLObject {
         obj.put("sortDate", format.format(_sortDate));
         return obj;
     }
-
-
-    // SQLObject impementation
-
-    @Override
-    public String getTableName() {
-        return "note";
-    }
-
-    @Override
-    public String getTypeTransactionID() {
-        return Authenticator.getUpdateTransactionID();
-    }
-
-    @Override
-    public String getDatabaseColumns() {
-        return _COLUMNS;
-    }
-    
-    @Override
-    public String getDatabasePlaceholders() {
-        return "?, ?, ?, ?, ?";
-    }
-
-    @Override
-    public Object[] getDatabaseValues() {
-        return new Object[] {
-                _uniqueID,
-                _text,
-                Utils.JSONDate(_creationDate),
-                Utils.JSONDate(_sortDate),
-                getTypeTransactionID()
-        };
-    }
     
     public NoteHandle getHandle() {
         return new NoteHandle(_uniqueID, _text.substring(0, 128)+"…");
@@ -125,12 +89,12 @@ public class Note implements JSONAble, SQLObject {
         return _uniqueID;
     }
 
-    public Date creationDate() {
-        return _creationDate;
+    public String creationDate() {
+        return Utils.JSONDate(_creationDate);
     }
 
-    public Date sortDate() {
-        return _sortDate;
+    public String sortDate() {
+        return Utils.JSONDate(_sortDate);
     }
 
     public String text() {

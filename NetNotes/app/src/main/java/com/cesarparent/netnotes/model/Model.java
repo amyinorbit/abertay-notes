@@ -34,7 +34,12 @@ public class Model {
     public static void deleteNoteWithUniqueID(String uniqueID) {
         Log.d("Model", "Deleting Note#" + uniqueID);
         
-        new DBController.Update("DELETE FROM note WHERE uniqueID = ?", Model::refresh).execute(uniqueID);
+        new DBController.Update("DELETE FROM note WHERE uniqueID = ?", new Runnable() {
+            @Override
+            public void run() {
+                refresh();
+            }
+        }).execute(uniqueID);
         new DBController.Update("INSERT OR REPLACE INTO deleted (uniqueID, seqID) VALUES (?, ?)", null)
                 .execute(uniqueID,
                          Authenticator.getDeleteTransactionID()+1);
@@ -43,25 +48,31 @@ public class Model {
     public static void getNoteWithUniqueID(String uniqueID, final NoteCompletionBlock done) {
         
         new DBController.Fetch("SELECT uniqueID, text, createDate, sortDate " +
-                                       "FROM note WHERE uniqueID = ?", c -> {
-           if (c.getCount() < 1) {
-               return;
-           }
-           c.moveToFirst();
-           done.run(new Note(c.getString(0), c.getString(1), c.getString(2), c.getString(3)));
+                                       "FROM note WHERE uniqueID = ?", new DBController.ResultBlock() {
+            @Override
+            public void run(Cursor c) {
+                if (c.getCount() < 1) {
+                    return;
+                }
+                c.moveToFirst();
+                done.run(new Note(c.getString(0), c.getString(1), c.getString(2), c.getString(3)));
+            }
         }).execute(uniqueID);
     }
     
     public static void addNote(final Note note) {
         new DBController.Update("INSERT OR REPLACE INTO note" +
                                 "(uniqueID, text, createDate, sortDate, seqID)" + 
-                                "VALUES (?, ?, ?, ?, ?)", () -> {
-            Log.d("Model", "Insert finished: " + note);
-            refresh();
+                                "VALUES (?, ?, ?, ?, ?)", new Runnable() {
+            @Override
+            public void run() {
+                Log.d("Model", "Insert finished: " + note);
+                refresh();
+            }
         }).execute(note.uniqueID(),
                    note.text(),
-                   Utils.JSONDate(note.creationDate()),
-                   Utils.JSONDate(note.sortDate()),
+                   note.creationDate(),
+                   note.sortDate(),
                    (Authenticator.getUpdateTransactionID()+1)
         );
     }
@@ -73,13 +84,16 @@ public class Model {
     public static void refresh() {
         
         new DBController.Fetch("SELECT uniqueID, SUBSTR(text, 1, 128) FROM note ORDER BY sortDate DESC",
-                               c -> {
-            _handles.clear();
-            for (int i = 0; i < c.getCount(); ++i) {
-               c.moveToPosition(i);
-                _handles.add(new NoteHandle(c.getString(0), c.getString(1)));
+                               new DBController.ResultBlock() {
+            @Override
+            public void run(Cursor c) {
+                _handles.clear();
+                for (int i = 0; i < c.getCount(); ++i) {
+                    c.moveToPosition(i);
+                    _handles.add(new NoteHandle(c.getString(0), c.getString(1)));
+                }
+                NotificationCenter.defaultCenter().postNotification(Notification.MODEL_UPDATE, null);
             }
-            NotificationCenter.defaultCenter().postNotification(Notification.MODEL_UPDATE, null);
         }).execute();
     }
 }
