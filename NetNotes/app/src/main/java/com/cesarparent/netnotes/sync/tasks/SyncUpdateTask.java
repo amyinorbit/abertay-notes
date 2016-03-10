@@ -18,7 +18,7 @@ import org.json.JSONException;
  */
 public class SyncUpdateTask extends SyncTask {
     private static final String SELECT_SQL = "SELECT uniqueID, text, createDate, sortDate " +
-                                             "FROM note WHERE seqID > ?";
+                                             "FROM note WHERE seqID < 0";
     
     public SyncUpdateTask(Sync.ResultCallback onResult) {
         super(APIRequest.ENDPOINT_NOTES, onResult);
@@ -28,7 +28,7 @@ public class SyncUpdateTask extends SyncTask {
     protected JSONArray getChanges(String transaction) {
         JSONArray changes = new JSONArray();
         // Try/Catch block with resources, equivalent to try/catch/finally{close()}
-        try (Cursor c = DBController.sharedInstance().fetch(SELECT_SQL, transaction)) {
+        try (Cursor c = DBController.sharedInstance().fetch(SELECT_SQL)) {
             for (int i = 0; i < c.getCount(); ++i) {
                 c.moveToPosition(i);
                 Note n = new Note(c.getString(0), c.getString(1), c.getString(2), c.getString(3));
@@ -38,7 +38,15 @@ public class SyncUpdateTask extends SyncTask {
             Log.e("SyncUpdateTask", "Error creating request body: "+e.getMessage());
             return null;
         }
+        // Tag the changes
+        DBController.sharedInstance().update("UPDATE note SET seqID = ? WHERE seqID < 0", ID);
         return changes;
+    }
+    
+    @Override
+    protected void onFail() {
+        new DBController.Update("UPDATE note SET seqID = -1 WHERE seqID = ?", null)
+                .executeOnExecutor(DBController.SERIAL_QUEUE, ID);
     }
 
     @Override
@@ -59,13 +67,14 @@ public class SyncUpdateTask extends SyncTask {
                                            n.text(),
                                            n.creationDate(),
                                            n.sortDate(),
-                                           transaction
+                                           0
                                    });
                     } catch (Exception e) {
                         Log.e("SyncUpdateTask", "Error parsing response: " + e.getMessage());
                         return false;
                     }
                 }
+                db.execSQL("UPDATE note SET seqID = 0 WHERE seqID = ?", new Object[]{ID});
                 return true;
             }
         });

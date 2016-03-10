@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
@@ -25,7 +24,7 @@ import com.cesarparent.utils.NotificationCenter;
 public class RootViewController extends AppCompatActivity implements Sync.ResultCallback {
     
     private NotesAdapter _adapter;
-    SwipeRefreshLayout _pullToRefresh;
+    SwipeRefreshLayout      _pullToRefresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +43,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
         
         // Model and list view
         refresh();
+        Model.refresh();
         _adapter = new NotesAdapter(this);
         ListView noteListView = (ListView) findViewById(R.id.notesListView);
         noteListView.setAdapter(_adapter);
@@ -119,11 +119,12 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     public void run(Sync.Status status) {
         _pullToRefresh.setRefreshing(false);
         if(status == Sync.Status.SUCCESS) { return; }
-        Snackbar message = Snackbar.make(_pullToRefresh, status.toString(), Snackbar.LENGTH_LONG);
+        final Snackbar message = Snackbar.make(_pullToRefresh, status.toString(), Snackbar.LENGTH_LONG);
         if(status == Sync.Status.FAIL_UNAUTHORIZED || status == Sync.Status.FAIL_LOGGED_OUT) {
             message.setAction(R.string.action_login, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    message.dismiss();
                     openLogin();
                 }
             });
@@ -131,6 +132,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
             message.setAction(R.string.action_try_again, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    message.dismiss();
                     refresh();
                 }
             });

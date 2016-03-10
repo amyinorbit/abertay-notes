@@ -41,7 +41,9 @@ public class Model {
                 refresh();
                 Sync.refresh();
             }
-        }).execute(uniqueID, Authenticator.getDeleteTransactionID() + 1);
+        }).executeOnExecutor(DBController.SERIAL_QUEUE,
+                             uniqueID,
+                             -1);
     }
     
     public static void getNoteWithUniqueID(String uniqueID, final NoteCompletionBlock done) {
@@ -56,7 +58,7 @@ public class Model {
                 c.moveToFirst();
                 done.run(new Note(c.getString(0), c.getString(1), c.getString(2), c.getString(3)));
             }
-        }).execute(uniqueID);
+        }).executeOnExecutor(DBController.SERIAL_QUEUE, uniqueID);
     }
     
     public static void addNote(final Note note) {
@@ -69,17 +71,25 @@ public class Model {
                 refresh();
                 Sync.refresh();
             }
-        }).execute(note.uniqueID(),
-                   note.text(),
-                   note.creationDate(),
-                   note.sortDate(),
-                   (Authenticator.getUpdateTransactionID()+1)
+        }).executeOnExecutor(DBController.SERIAL_QUEUE,
+                             note.uniqueID(),
+                             note.text(),
+                             note.creationDate(),
+                             note.sortDate(),
+                             -1
         );
     }
     
     public static void flushDeleted() {
-        new DBController.Update("DELETE FROM deleted", null).execute();
-        new DBController.Update("UPDATE note SET seqID = 1", null).execute();
+        new DBController.Update("DELETE FROM deleted", null)
+                .executeOnExecutor(DBController.SERIAL_QUEUE);
+        new DBController.Update("UPDATE note SET seqID = -1", null)
+                .executeOnExecutor(DBController.SERIAL_QUEUE);
+    }
+    
+    public static void flushDeletedBefore(String transaction) {
+        new DBController.Update("DELETE FROM deleted WHERE seqID > 0 AND seqID <= ?", null)
+                .executeOnExecutor(DBController.SERIAL_QUEUE, transaction);
     }
     
     public static void refresh() {
@@ -95,6 +105,6 @@ public class Model {
                 }
                 NotificationCenter.defaultCenter().postNotification(Notification.MODEL_UPDATE, null);
             }
-        }).execute();
+        }).executeOnExecutor(DBController.SERIAL_QUEUE);
     }
 }

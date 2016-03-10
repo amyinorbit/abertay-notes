@@ -9,6 +9,10 @@ import android.util.Log;
 
 
 import com.cesarparent.netnotes.CPApplication;
+import com.cesarparent.netnotes.sync.Authenticator;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by cesar on 23/02/2016.
@@ -26,8 +30,8 @@ public class DBController extends SQLiteOpenHelper {
     }
     
     // Basic DatabaseHelper data
-    public static final int kDBVersion = 1;
-    public static final String kDBName = "netnotes.db";
+    public static final int DB_VERSION = 1;
+    public static final String DB_NAME = "netnotes.db";
     
     private static final String SQL_CREATE_NOTE = 
             "CREATE TABLE note ("+
@@ -35,21 +39,23 @@ public class DBController extends SQLiteOpenHelper {
             "text       TEXT NOT NULL DEFAULT \"\","+
             "createDate DATETIME,"+
             "sortDate   DATETIME," + 
-            "seqID      BIGINT UNSIGNED)";
+            "seqID      BIGINT)";
     
     private static final String SQL_CREATE_DELETE =
             "CREATE TABLE deleted ("+
             "uniqueID   CHAR(36) PRIMARY KEY,"+
-            "seqID      BIGINT UNSIGNED)";
+            "seqID      BIGINT)";
     
     private static final String[] SQL_CREATE = {SQL_CREATE_NOTE, SQL_CREATE_DELETE};
     
     private static final String SQL_DELETE_NOTE = "DROP TABLE note";
     private static final String SQL_DELETE_DELETE = "DROP TABLE deleted";
-    
     private static final String[] SQL_DROP = {SQL_DELETE_NOTE, SQL_DELETE_DELETE};
     
+    public static final Executor SERIAL_QUEUE = Executors.newSingleThreadExecutor();
+    
     private static DBController _instance = null;
+    private static final Object DB_LOCK = new Object();
     
     public static synchronized DBController sharedInstance() {
         if(_instance == null) {
@@ -59,7 +65,7 @@ public class DBController extends SQLiteOpenHelper {
     }
     
     private DBController() {
-        super(CPApplication.getContext(), kDBName, null, kDBVersion);
+        super(CPApplication.getContext(), DB_NAME, null, DB_VERSION);
     }
     
     // DatabaseHelper overrides
@@ -74,6 +80,7 @@ public class DBController extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Authenticator.invalidateSyncDates();
         for(String query : SQL_DROP) {
             db.execSQL(query);
         }
@@ -88,25 +95,32 @@ public class DBController extends SQLiteOpenHelper {
     // Commodity functions
     
     public Cursor fetch(String query, String... params) {
-        return getReadableDatabase().rawQuery(query, params);
+        synchronized (DB_LOCK) {
+            return getReadableDatabase().rawQuery(query, params);
+        }
     }
     
     public void update(String query, Object... params) {
-        SQLiteDatabase db = getWritableDatabase();
-        db.beginTransaction();
-        db.execSQL(query, params);
-        db.endTransaction();
+        synchronized (DB_LOCK) {
+            SQLiteDatabase db = getWritableDatabase();
+            db.beginTransaction();
+            db.execSQL(query, params);
+            db.setTransactionSuccessful();
+            db.endTransaction();
+        }
     }
     
     public boolean updateBlock(UpdateCallback block) {
-        SQLiteDatabase db = getWritableDatabase();
-        db.beginTransaction();
-        boolean result = block.run(db);
-        if(result) {
-            db.setTransactionSuccessful();
+        synchronized (DB_LOCK) {
+            SQLiteDatabase db = getWritableDatabase();
+            db.beginTransaction();
+            boolean result = block.run(db);
+            if(result) {
+                db.setTransactionSuccessful();
+            }
+            db.endTransaction();
+            return result;
         }
-        db.endTransaction();
-        return result;
     }
     
     // AsyncTask stuff
@@ -123,12 +137,14 @@ public class DBController extends SQLiteOpenHelper {
         
         @Override
         protected Void doInBackground(Object... params) {
-            SQLiteDatabase db = sharedInstance().getWritableDatabase();
-            db.beginTransaction();
-            db.execSQL(_query, params);
-            db.setTransactionSuccessful();
-            db.endTransaction();
-            return null;
+            synchronized (DB_LOCK) {
+                SQLiteDatabase db = sharedInstance().getWritableDatabase();
+                db.beginTransaction();
+                db.execSQL(_query, params);
+                db.setTransactionSuccessful();
+                db.endTransaction();
+                return null;
+            }
         }
         
         @Override
@@ -151,8 +167,10 @@ public class DBController extends SQLiteOpenHelper {
         
         @Override
         protected Cursor doInBackground(String... params) {
-            SQLiteDatabase db = sharedInstance().getReadableDatabase();
-            return db.rawQuery(_query, params);
+            synchronized (DB_LOCK) {
+                SQLiteDatabase db = sharedInstance().getReadableDatabase();
+                return db.rawQuery(_query, params);
+            }
         }
         
         // We need the result blocks to run on the UI thread

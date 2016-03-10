@@ -1,6 +1,5 @@
 package com.cesarparent.netnotes.sync;
 
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
 import android.util.Log;
@@ -11,6 +10,9 @@ import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.sync.tasks.APILoginTask;
 import com.cesarparent.netnotes.sync.tasks.SyncDeleteTask;
 import com.cesarparent.netnotes.sync.tasks.SyncUpdateTask;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by cesar on 23/02/2016.
@@ -37,6 +39,8 @@ public class Sync {
         }
     }
     
+    private static final Executor SERIAL_QUEUE = Executors.newSingleThreadExecutor();
+    
     public interface ResultCallback {
         void run(Status status);
     }
@@ -44,7 +48,7 @@ public class Sync {
     @UiThread
     public static void logIn(String email, String password, ResultCallback onResult) {
         APILoginTask task = new APILoginTask(onResult);
-        task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, email, password);
+        task.executeOnExecutor(SERIAL_QUEUE, email, password);
     }
     
     @UiThread
@@ -64,19 +68,19 @@ public class Sync {
             public void run(Status status) {
                 Log.d("Sync", "Status: "+status);
                 if(status == Status.SUCCESS) {
-                    new SyncUpdateTask(onResult).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                    new SyncUpdateTask(onResult).executeOnExecutor(SERIAL_QUEUE);
                 } else {
                     onResult.run(status);
                 }
             }
-        }).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }).executeOnExecutor(SERIAL_QUEUE);
     }
     
     @UiThread
     public static void refresh() {
         if(!Authenticator.isLoggedIn()) { return; }
         
-        new SyncDeleteTask(null).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-        new SyncUpdateTask(null).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        new SyncDeleteTask(null).executeOnExecutor(SERIAL_QUEUE);
+        new SyncUpdateTask(null).executeOnExecutor(SERIAL_QUEUE);
     }
 }

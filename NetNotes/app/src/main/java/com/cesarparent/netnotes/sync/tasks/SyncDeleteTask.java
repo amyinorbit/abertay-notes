@@ -16,7 +16,7 @@ import org.json.JSONArray;
  */
 public class SyncDeleteTask extends SyncTask {
 
-    private static final String SELECT_SQL = "SELECT uniqueID FROM deleted WHERE seqID > ?";
+    private static final String SELECT_SQL = "SELECT uniqueID FROM deleted WHERE seqID < 0";
     
     public SyncDeleteTask(Sync.ResultCallback onResult) {
         super(APIRequest.ENDPOINT_DELETE, onResult);
@@ -25,13 +25,20 @@ public class SyncDeleteTask extends SyncTask {
     @Override
     protected JSONArray getChanges(String transaction) {
         JSONArray changes = new JSONArray();
-        Cursor c = DBController.sharedInstance().fetch(SELECT_SQL, transaction);
+        Cursor c = DBController.sharedInstance().fetch(SELECT_SQL);
         for (int i = 0; i < c.getCount(); ++i) {
             c.moveToPosition(i);
             changes.put(c.getString(0));
         }
         c.close();
+        DBController.sharedInstance().update("UPDATE deleted SET seqID = ? WHERE seqID < 0", ID);
         return changes;
+    }
+    
+    @Override
+    protected void onFail() {
+        new DBController.Update("UPDATE deleted SET seqID = -1 WHERE seqID = ?", null)
+                .executeOnExecutor(DBController.SERIAL_QUEUE, ID);
     }
 
     @Override
@@ -44,16 +51,12 @@ public class SyncDeleteTask extends SyncTask {
                         String uniqueID = data.getString(i);
                         db.execSQL("DELETE FROM note WHERE uniqueID = ?",
                                    new Object[]{uniqueID});
-                        db.execSQL("INSERT OR REPLACE INTO deleted (uniqueID, seqID) VALUES (?, ?)",
-                                   new Object[]{
-                                           uniqueID,
-                                           transaction
-                                   });
                     } catch (Exception e) {
                         Log.e("SyncUpdateTask", "Error parsing response: " + e.getMessage());
                         return false;
                     }
                 }
+                db.execSQL("DELETE FROM deleted WHERE seqID = ?", new Object[]{ID});
                 return true;
             }
         });

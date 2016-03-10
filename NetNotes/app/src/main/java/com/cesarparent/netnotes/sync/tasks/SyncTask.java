@@ -10,6 +10,8 @@ import com.cesarparent.netnotes.sync.Sync;
 
 import org.json.JSONArray;
 
+import java.util.Random;
+
 /**
  * Created by cesar on 09/03/2016.
  * 
@@ -17,12 +19,18 @@ import org.json.JSONArray;
  */
 public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
     
+    protected final int ID;
     private String _endpoint;
     private Sync.ResultCallback _onResult;
     
     public SyncTask(String endpoint, Sync.ResultCallback onResult) {
         _endpoint = endpoint;
         _onResult = onResult;
+        
+        Random generator = new Random();
+        ID = 1+Math.abs(generator.nextInt());
+        
+        Log.d("Sync", "Starting Sync Task ID#"+ID);
     }
 
     @Override
@@ -57,8 +65,11 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
 
     @Override
     protected void onPostExecute(Sync.Status status) {
+        Log.d("Sync", "Finishing Sync Task ID#"+ID);
         if(status == Sync.Status.SUCCESS) {
             Model.refresh();
+        } else {
+            onFail();
         }
         if(_onResult != null) {
             _onResult.run(status);
@@ -73,7 +84,7 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
         }
         setTransactionID(res.getTransactionID());
         
-        return updates.length() == 0 || processResponseData(updates, res.getTransactionID());
+        return processResponseData(updates, res.getTransactionID());
     }
 
 
@@ -93,6 +104,8 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
             Authenticator.setDeleteTransactionID(id);
         }
     }
+    
+    protected abstract void onFail();
 
     protected abstract JSONArray getChanges(String transaction);
 
