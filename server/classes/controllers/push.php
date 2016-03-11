@@ -26,7 +26,7 @@ EOT;
         }
         $db->commit();
         $res->SetStatusCode(200);
-        $res->SetBody([]);
+        $res->SetBody(["message" => "Token registered"]);
     }
     
     public static function PushToDevices($action) {
