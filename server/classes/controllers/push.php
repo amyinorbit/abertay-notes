@@ -32,7 +32,6 @@ EOT;
     public static function PushToDevices($action) {
         $tokens = self::GetTokens(\app::UserID(), \app::DeviceID());
         if(count($tokens) === 0) { return; }
-        
         $url = \app::GetOption("gcm.server", "http://localhost");
         $apiKey = \app::GetOption("gcm.key", "");
         
