@@ -12,23 +12,19 @@ $auth = new controllers\auth;
 
 $router->OnPost("/notes", function($req, $res) {
     if(!controllers\auth::ValidateKey($req, $res)) { return; }
-    (new controllers\sync)->Update($req, $res);
+    if(!controllers\sync::Update($req, $res)) { return; }
+    controllers\push::PushToDevices();
 });
 
 $router->OnPost("/deleted", function($req, $res) {
     if(!controllers\auth::ValidateKey($req, $res)) { return; }
-    (new controllers\sync)->Delete($req, $res);
+    if(!controllers\sync::Delete($req, $res)) { return; }
+    controllers\push::PushToDevices();
 });
 
-$router->OnGet("/", function($req, $res) {
-    $res->SetBody([
-        "message" => "Installation Successful",
-        "app" => [
-            "version" => \app::GetOption("app.version", "1.0.0a"),
-            "url" => \app::GetOption("app.url", "")
-        ]
-    ]);
-    
+$router->OnPost("/token", function($req, $res) {
+    if(!controllers\auth::ValidateKey($req, $res)) { return; }
+    controllers\push::RegisterToken($req, $res);
 });
 
 $router->OnPost("/login", function($req, $res) {

@@ -1,0 +1,7 @@
+POST
+Host: localhost:7000
+Accept: */*
+Content-Length: 75
+Content-Type: application/x-www-form-urlencoded
+
+{"registration_ids":["push1","push2","push3"],"data":{"message":"refresh"}}

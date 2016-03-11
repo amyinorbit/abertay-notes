@@ -17,9 +17,12 @@ import android.widget.ListView;
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.NotesAdapter;
+import com.cesarparent.netnotes.push.PushUpdateListener;
+import com.cesarparent.netnotes.push.TokenIntentService;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;
+import com.google.android.gms.gcm.GcmListenerService;
 
 public class RootViewController extends AppCompatActivity implements Sync.ResultCallback {
     
@@ -47,6 +50,12 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
         _adapter = new NotesAdapter(this);
         ListView noteListView = (ListView) findViewById(R.id.notesListView);
         noteListView.setAdapter(_adapter);
+        
+        Intent listener = new Intent(this, GcmListenerService.class);
+        startService(listener);
+
+        Intent token = new Intent(this, TokenIntentService.class);
+        startService(token);
         
         
         

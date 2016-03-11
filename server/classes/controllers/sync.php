@@ -59,24 +59,24 @@ EOT;
      * Process an update request, and returns the changes that have occurred since the sync
      * time sent with the request.
      */
-    public function Update($req, $res) {
+    public static function Update($req, $res) {
         $db = \app::Connection();
         $since = $req->Header("X-NetNotes-Transaction", 0);
-        $newID = $this->UpdateSeqID(\app::UserID());
+        $newID = self::UpdateSeqID(\app::UserID());
         $seqID = $newID;
         
         $transaction = json_decode($req->Body(), true);
         if(is_null($transaction) || !is_array($transaction)) {
-            return $this->_InvalidFormat($res);
+            return self::_InvalidFormat($res);
         }
         if(count($transaction) > 0) {
             $newID += 1;
             $db->beginTransaction();
             $stmt = $db->prepare(self::$insert);
             foreach($transaction as $note) {
-                if($this->_ValidateNote($note)) {
+                if(self::_ValidateNote($note)) {
                     $db->rollBack();
-                    return $this->_InvalidFormat();
+                    return self::_InvalidFormat();
                 }
                 $stmt->execute([
                     "userID" => \app::UserID(),
@@ -87,7 +87,7 @@ EOT;
                     "seqID" => $newID,
                 ]);
             }
-            $this->SetUpdateSeqID(\app::UserID(), $newID);
+            self::SetUpdateSeqID(\app::UserID(), $newID);
             $db->commit();
         }
         
@@ -102,21 +102,22 @@ EOT;
         $res->SetHeader("X-NetNotes-Transaction", strval($newID));
         $res->SetBody(["changes" => $stmt->fetchAll(\PDO::FETCH_ASSOC)]);
         $res->SetStatusCode(200);
+        return true;
     }
     
     /**
      * Process an delete request, and returns the deletions that have occurred since the sync
      * time sent with the request.
      */
-    public function Delete($req, $res) {
+    public static function Delete($req, $res) {
         $db = \app::Connection();
         $since = $req->Header("X-NetNotes-Transaction", 0);
-        $newID = $this->DeleteSeqID(\app::UserID());
+        $newID = self::DeleteSeqID(\app::UserID());
         $seqID = $newID;
         
         $transaction = json_decode($req->Body(), true);
         if(is_null($transaction) || !is_array($transaction)) {
-            return $this->_InvalidFormat($res);
+            return self::_InvalidFormat($res);
         }
         
         if(count($transaction) > 0) {
@@ -126,7 +127,7 @@ EOT;
             $stmt2 = $db->prepare(self::$insertDeleted);
             foreach($transaction as $uuid) {
                 if(!is_string($uuid)) {
-                    return $this->_InvalidFormat($res);
+                    return self::_InvalidFormat($res);
                 }
                 $stmt1->execute(["userID" => \app::UserID(), "uniqueID" => $uuid]);
                 $stmt2->execute([
@@ -135,7 +136,7 @@ EOT;
                     "seqID" => $newID
                 ]);
             }
-            $this->SetDeleteSeqID(\app::UserID(), $newID);
+            self::SetDeleteSeqID(\app::UserID(), $newID);
             $db->commit();
         }
         
@@ -155,25 +156,26 @@ EOT;
         $res->SetHeader("X-NetNotes-Transaction", strval($newID));
         $res->SetBody(["changes" => $deleted]);
         $res->SetStatusCode(200);
+        return true;
     }
     
-    private function UpdateSeqID($userID) {
-        return $this->ID("updateSeqID", $userID);
+    private static function UpdateSeqID($userID) {
+        return self::ID("updateSeqID", $userID);
     }
     
-    private function DeleteSeqID($userID) {
-        return $this->ID("deleteSeqID", $userID);
+    private static function DeleteSeqID($userID) {
+        return self::ID("deleteSeqID", $userID);
     }
     
-    private function SetUpdateSeqID($userID, $id) {
-        $this->SetID("updateSeqID", $id, $userID);
+    private static function SetUpdateSeqID($userID, $id) {
+        self::SetID("updateSeqID", $id, $userID);
     }
     
-    private function SetDeleteSeqID($userID, $id) {
-        $this->SetID("deleteSeqID", $id, $userID);
+    private static function SetDeleteSeqID($userID, $id) {
+        self::SetID("deleteSeqID", $id, $userID);
     }
     
-    private function ID($field, $userID) {
+    private static function ID($field, $userID) {
         $db = \app::Connection();
         $get = $db->prepare(sprintf(self::$selID, $field));
         $get->execute(["userID" => $userID]);
@@ -184,7 +186,7 @@ EOT;
         return $result["id"];
     }
     
-    private function SetID($field, $id, $userID) {
+    private static function SetID($field, $id, $userID) {
         $db = \app::Connection();
         $set = $db->prepare(sprintf(self::$incID, $field));
         if(!$set->execute(["userID" => $userID, "seqID" => $id])) {
@@ -192,12 +194,13 @@ EOT;
         }
     }
     
-    private function _InvalidFormat($res) {
+    private static function _InvalidFormat($res) {
         $res->SetStatusCode(422);
         $res->SetBody(["fail" => "Invalid Entity."]);
+        return false;
     }
     
-    public function _ValidateNote($note) {
+    public static function _ValidateNote($note) {
         if(!is_array($note)) { return false; }
     }
 }

@@ -9,7 +9,7 @@
 
 class app {
     
-    private static $pushToken = null;
+    private static $deviceID = null;
     private static $userID = null;
     private static $conn = null;
     private static $options = [
@@ -57,10 +57,10 @@ class app {
     }
     
     /**
-     * Registers a Push Notification token with the app.
+     * Registers a device ID token with the app.
      */
-    public static function SetPushToken($token) {
-        self::$pushToken = $token;
+    public static function SetDeviceID($id) {
+        self::$deviceID = $id;
     }
     
     /**
@@ -71,10 +71,10 @@ class app {
     }
     
     /**
-     * Returns the current Push Notifications Token if there is one registered, or null
+     * Returns the current device's ID if there is one registered, or null
      */
-    public static function PushToken() {
-        return self::$pushToken;
+    public static function DeviceID() {
+        return self::$deviceID;
     }
     
     /**

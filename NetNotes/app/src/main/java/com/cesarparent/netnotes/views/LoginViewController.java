@@ -22,10 +22,10 @@ import com.cesarparent.utils.Utils;
 
 public class LoginViewController extends AppCompatActivity implements Sync.ResultCallback {
     
-    private ProgressDialog _progress;
-    private TextView    _emailTextField;
-    private EditText    _passwordTextField;
-    private Button      _button;
+    private ProgressDialog  _progress;
+    private TextView        _emailTextField;
+    private EditText        _passwordTextField;
+    private Button          _button;
     
 
     @Override

@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.provider.Settings;
 
+import com.cesarparent.netnotes.push.TokenIntentService;
+
 import java.util.Locale;
 
 /**
@@ -14,6 +16,8 @@ import java.util.Locale;
  */
 public class CPApplication extends Application {
     private static Context _context;
+    
+    public static final String PREFS_TAG = "com.cesarparent.NetNotes";
 
     public void onCreate() {
         super.onCreate();
@@ -40,6 +44,6 @@ public class CPApplication extends Application {
     }
     
     public static SharedPreferences getSharedPreferences() {
-        return _context.getSharedPreferences("com.cesarparent.NetNotes", Context.MODE_PRIVATE);
+        return _context.getSharedPreferences(PREFS_TAG, Context.MODE_PRIVATE);
     }
 }

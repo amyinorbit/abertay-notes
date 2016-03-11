@@ -36,6 +36,7 @@ class auth {
             return self::_Unauthorized($res);
         }
         \app::SetUserID($user["uniqueID"]);
+        \app::SetDeviceID($device);
         return true;
     }
     
@@ -69,14 +70,15 @@ class auth {
         }
         
         \app::SetUserID($user["uniqueID"]);
-        return self::RegisterToken($device, $user["uniqueID"], self::ParsePushToken($req));
+        \app::SetDeviceID($device);
+        return self::RegisterToken($device, $user["uniqueID"]);
     }
     
     /**
      * Registers 
      *
      */
-    private static function RegisterToken($deviceID, $userID, $pushToken = null) {
+    private static function RegisterToken($deviceID, $userID) {
         $token = \Utils::RandomString(128);
         $sql = "REPLACE INTO `token` (`userID`, `deviceID`, `token`, `pushToken`)
                 VALUES (:userID, :deviceID, :token, :pushToken);";
@@ -85,23 +87,12 @@ class auth {
             "userID" => $userID,
             "deviceID" => $deviceID,
             "token" => $token,
-            "pushToken" => $pushToken
+            null
         ]);
         if(!$result) {
             throw new \Exception("Database Error");
         }
         return $token;
-    }
-    
-    /**
-     * Returns the push token sent in a login request, or null if there isn't a valid one.
-     */
-    private static function ParsePushToken($request) {
-        $json = json_decode($request->Body(), true);
-        if(is_null($json)) { return null; }
-        if(!isset($json["pushToken"])) { return null; }
-        if(!is_string($json["pushToken"])) { return null; }
-        return $json["pushToken"];
     }
     
     /**
@@ -116,19 +107,7 @@ class auth {
         if(!$result) {
             return false;
         }
-        if(!is_null($result["pushToken"])) {
-            \app::setPushToken($result["pushToken"]);
-        }
         return $result["token"];
-    }
-    
-    /**
-     * Nukes a token from the database. Used when a user logs out.
-     */
-    private static function NukeToken($userID, $deviceID) {
-        $sql = "DELETE FROM `token` WHERE `userID` = :userID AND `deviceID` = :deviceID;";
-        $stmt = \app::Connection()->prepare($sql);
-        $stmt->execute(["userID" => $userID, "deviceID" => $deviceID]);
     }
     
     /**
