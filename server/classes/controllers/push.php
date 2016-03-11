@@ -61,7 +61,7 @@ EOT;
     
     private static function GetTokens($userID, $deviceID) {
         $sql = "SELECT `pushToken` FROM `token`
-                WHERE `userID` = :userID AND `deviceID` <> :deviceID;";
+                WHERE `userID` = :userID AND `deviceID` <> :deviceID AND `pushToken` IS NOT NULL;";
         $stmt = \app::Connection()->prepare($sql);
         $stmt->execute(["userID" => $userID, "deviceID" => $deviceID]);
         $tokens = [];
