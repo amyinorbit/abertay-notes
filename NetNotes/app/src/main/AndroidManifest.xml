@@ -47,7 +47,7 @@
             </intent-filter>
         </service>
         <service
-            android:name="com.cesarparent.netnotes.push.TokenIntentService"
+            android:name=".push.PushTokenService"
             android:exported="false">
         </service>
         

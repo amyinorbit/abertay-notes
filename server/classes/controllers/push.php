@@ -42,7 +42,7 @@ EOT;
         
         $payload = [
             "registration_ids" => $tokens,
-            "data" => [ "action" => $resource ]
+            "data" => [ "sync_action" => $action ]
         ];
         
         $ch = curl_init();

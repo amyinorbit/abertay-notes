@@ -17,8 +17,8 @@ import android.widget.ListView;
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.NotesAdapter;
-import com.cesarparent.netnotes.push.PushUpdateListener;
-import com.cesarparent.netnotes.push.TokenIntentService;
+import com.cesarparent.netnotes.push.PushTokenService;
+import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;
@@ -46,18 +46,12 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
         
         // Model and list view
         refresh();
+        refreshToken();
         Model.refresh();
+        
         _adapter = new NotesAdapter(this);
         ListView noteListView = (ListView) findViewById(R.id.notesListView);
         noteListView.setAdapter(_adapter);
-        
-        Intent listener = new Intent(this, GcmListenerService.class);
-        startService(listener);
-
-        Intent token = new Intent(this, TokenIntentService.class);
-        startService(token);
-        
-        
         
         noteListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -181,5 +175,10 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     public void onModelChange(Object notification) {
         _adapter.notifyDataSetChanged();
     }
-
+    
+    public void refreshToken() {
+        if(Authenticator.isTokenSent()) { return; }
+        Intent token = new Intent(this, PushTokenService.class);
+        startService(token);
+    }
 }

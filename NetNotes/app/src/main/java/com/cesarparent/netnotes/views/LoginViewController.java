@@ -1,6 +1,7 @@
 package com.cesarparent.netnotes.views;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NavUtils;
@@ -13,9 +14,9 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
+import com.cesarparent.netnotes.push.PushTokenService;
 import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Utils;
@@ -112,6 +113,8 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
         Model.flushDeleted();
         if(status == Sync.Status.SUCCESS) {
             showLoggedIn(true);
+            Intent i = new Intent(this, PushTokenService.class);
+            startService(i);
         } else {
             Snackbar.make(_button, R.string.loginmsg_failed, Snackbar.LENGTH_SHORT).show();
         }

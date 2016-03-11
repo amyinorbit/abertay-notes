@@ -17,6 +17,8 @@ public class Authenticator {
     private static final String KEY_TOKEN = "user.token";
     private static final String KEY_SEQDELETE = "sync.transaction.delete";
     private static final String KEY_SEQUPDATE = "sync.transaction.update";
+    private static final String KEY_PUSH_TOKEN = "push.token";
+    private static final String KEY_PUSH_TOKEN_SENT = "push.token_sent";
     
     private static final Object _sequenceIDLock = new Object();
     
@@ -36,6 +38,10 @@ public class Authenticator {
     
     public static boolean isLoggedIn() {
         return (getEmail() != null && getToken() != null);
+    }
+    
+    public static boolean isTokenSent() {
+        return CPApplication.getSharedPreferences().getBoolean(KEY_PUSH_TOKEN_SENT, false);
     }
     
     public static void setCredentials(String email, String token) {

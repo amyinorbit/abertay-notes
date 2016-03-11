@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.provider.Settings;
 
-import com.cesarparent.netnotes.push.TokenIntentService;
-
 import java.util.Locale;
 
 /**

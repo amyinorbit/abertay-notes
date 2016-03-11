@@ -1,9 +1,12 @@
 package com.cesarparent.netnotes.sync.tasks;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.model.Model;
+import com.cesarparent.netnotes.push.PushTokenService;
 import com.cesarparent.netnotes.sync.APIRequest;
 import com.cesarparent.netnotes.sync.APIResponse;
 import com.cesarparent.netnotes.sync.Authenticator;
