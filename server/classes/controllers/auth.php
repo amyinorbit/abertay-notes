@@ -87,7 +87,7 @@ class auth {
             "userID" => $userID,
             "deviceID" => $deviceID,
             "token" => $token,
-            null
+            "pushToken" => null
         ]);
         if(!$result) {
             throw new \Exception("Database Error");
