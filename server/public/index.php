@@ -13,13 +13,13 @@ $auth = new controllers\auth;
 $router->OnPost("/notes", function($req, $res) {
     if(!controllers\auth::ValidateKey($req, $res)) { return; }
     if(!controllers\sync::Update($req, $res)) { return; }
-    controllers\push::PushToDevices();
+    controllers\push::PushToDevices("update");
 });
 
 $router->OnPost("/deleted", function($req, $res) {
     if(!controllers\auth::ValidateKey($req, $res)) { return; }
     if(!controllers\sync::Delete($req, $res)) { return; }
-    controllers\push::PushToDevices();
+    controllers\push::PushToDevices("delete");
 });
 
 $router->OnPost("/token", function($req, $res) {

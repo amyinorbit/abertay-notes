@@ -29,11 +29,11 @@ EOT;
         $res->SetBody([]);
     }
     
-    public static function PushToDevices() {
+    public static function PushToDevices($action) {
         $tokens = self::GetTokens(\app::UserID(), \app::DeviceID());
         if(count($tokens) === 0) { return; }
         
-        $url = \app::GetOption("gcm.server", "https://gcm-http.googleapis.com/gcm/send");
+        $url = \app::GetOption("gcm.server", "http://localhost");
         $apiKey = \app::GetOption("gcm.key", "");
         
         $headers = [
@@ -43,7 +43,7 @@ EOT;
         
         $payload = [
             "registration_ids" => $tokens,
-            "data" => [ "message" => "refresh" ]
+            "data" => [ "action" => $resource ]
         ];
         
         $ch = curl_init();

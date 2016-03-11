@@ -102,7 +102,7 @@ EOT;
         $res->SetHeader("X-NetNotes-Transaction", strval($newID));
         $res->SetBody(["changes" => $stmt->fetchAll(\PDO::FETCH_ASSOC)]);
         $res->SetStatusCode(200);
-        return true;
+        return (count($transaction) > 0);
     }
     
     /**
@@ -156,7 +156,7 @@ EOT;
         $res->SetHeader("X-NetNotes-Transaction", strval($newID));
         $res->SetBody(["changes" => $deleted]);
         $res->SetStatusCode(200);
-        return true;
+        return (count($transaction) > 0);
     }
     
     private static function UpdateSeqID($userID) {
