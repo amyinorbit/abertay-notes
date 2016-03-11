@@ -9,7 +9,7 @@ class push {
 EOT;
     
     public static function RegisterToken($req, $res) {
-        $json = json_decode($request->Body(), true);
+        $json = json_decode($req->Body(), true);
         if(is_null($json) || !isset($json["token"]) || !is_string($json["token"])) {
             return self::_InvalidFormat($res);
         }
@@ -25,7 +25,7 @@ EOT;
             throw new \Exception("Database Error");
         }
         $db->commit();
-        $res->SetStatus(200);
+        $res->SetStatusCode(200);
         $res->SetBody([]);
     }
     
