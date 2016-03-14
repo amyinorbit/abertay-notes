@@ -1,9 +1,8 @@
 package com.cesarparent.netnotes.push;
 
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-
+import com.cesarparent.netnotes.sync.Sync;
 import com.google.android.gms.gcm.GcmListenerService;
 
 /**
@@ -13,11 +12,24 @@ import com.google.android.gms.gcm.GcmListenerService;
  */
 public class PushUpdateListener extends GcmListenerService {
     
-    
     @Override
     public void onMessageReceived(String from, Bundle data) {
-        Log.d("PushNotifications", "Received message from "+from);
-        Log.d("PushNotifications", "Data: "+data);
-        // TODO: Handle 
+        Log.d("PushUpdateListener", "Received message from "+from);
+        String action = data.getString("sync_action");
+        if(action == null) { return; }
+        
+        switch (action) {
+            case "update":
+                Log.d("PushUpdateListener", "Triggering update refresh");
+                Sync.refreshUpdate();
+                break;
+            case "delete":
+                Log.d("PushUpdateListener", "Triggering delete refresh");
+                Sync.refreshDelete();
+                break;
+            default:
+                Log.w("PushUpdateListener", "Invalid push sync action: " + action);
+                break;
+        }
     }
 }

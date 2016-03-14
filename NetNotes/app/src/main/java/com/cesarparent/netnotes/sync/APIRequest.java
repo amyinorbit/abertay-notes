@@ -120,6 +120,7 @@ public class APIRequest {
         }
         catch(IOException e) {
             Log.e("APIRequest", "Connection Error: "+e.getMessage());
+            e.printStackTrace();
             return new APIResponse(APIResponse.CONNECTION_ERROR);
         }
         finally {

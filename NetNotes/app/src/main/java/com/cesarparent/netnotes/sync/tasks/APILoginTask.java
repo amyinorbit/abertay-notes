@@ -70,7 +70,7 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
     
     private void callback(Sync.Status status) {
         if(_onResult != null) {
-            _onResult.run(status);
+            _onResult.onSyncResult(status);
         }
     }
 }

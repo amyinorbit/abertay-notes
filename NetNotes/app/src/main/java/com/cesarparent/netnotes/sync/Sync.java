@@ -42,7 +42,7 @@ public class Sync {
     private static final Executor SERIAL_QUEUE = Executors.newSingleThreadExecutor();
     
     public interface ResultCallback {
-        void run(Status status);
+        void onSyncResult(Status status);
     }
     
     @UiThread
@@ -61,19 +61,32 @@ public class Sync {
     @UiThread
     public static void refresh(@NonNull final ResultCallback onResult) {
         if(!Authenticator.isLoggedIn()) {
-            onResult.run(Status.FAIL_LOGGED_OUT);
+            onResult.onSyncResult(Status.FAIL_LOGGED_OUT);
+            return;
         }
         new SyncDeleteTask(new ResultCallback() {
             @Override
-            public void run(Status status) {
+            public void onSyncResult(Status status) {
                 Log.d("Sync", "Status: "+status);
                 if(status == Status.SUCCESS) {
                     new SyncUpdateTask(onResult).executeOnExecutor(SERIAL_QUEUE);
                 } else {
-                    onResult.run(status);
+                    onResult.onSyncResult(status);
                 }
             }
         }).executeOnExecutor(SERIAL_QUEUE);
+    }
+    
+    @UiThread
+    public static void refreshDelete() {
+        if(!Authenticator.isLoggedIn()) { return; }
+        new SyncDeleteTask(null).executeOnExecutor(SERIAL_QUEUE);
+    }
+    
+    @UiThread
+    public static void refreshUpdate() {
+        if(!Authenticator.isLoggedIn()) { return; }
+        new SyncUpdateTask(null).executeOnExecutor(SERIAL_QUEUE);
     }
     
     @UiThread

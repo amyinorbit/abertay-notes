@@ -1,7 +1,12 @@
 package com.cesarparent.netnotes.sync.tasks;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.sync.APIRequest;
 import com.cesarparent.netnotes.sync.APIResponse;
@@ -35,6 +40,15 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
 
     @Override
     protected Sync.Status doInBackground(Void... params) {
+        
+        // Check that we have an active network, otherwise abort
+        ConnectivityManager cm = (ConnectivityManager)CPApplication
+                .getContext()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if(info == null || !info.isConnectedOrConnecting()) {
+            return Sync.Status.FAIL_NO_NETWORK;
+        }
         
         String transaction = getTransactionID();
 
@@ -72,7 +86,7 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
             onFail();
         }
         if(_onResult != null) {
-            _onResult.run(status);
+            _onResult.onSyncResult(status);
         }
     }
     

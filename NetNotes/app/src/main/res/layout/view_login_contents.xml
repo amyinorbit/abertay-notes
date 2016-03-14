@@ -13,28 +13,45 @@
     tools:context="com.cesarparent.netnotes.views.LoginViewController"
     tools:showIn="@layout/view_login">
 
-    <EditText
-        android:layout_width="wrap_content"
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textEmailAddress"
-        android:ems="10"
-        android:id="@+id/emailTextField"
-        android:nextFocusForward="@+id/passwordTextField"
-        android:layout_below="@+id/emailLabel"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="10dp"/>
+        android:id="@+id/emailTextLayout">
 
-    <EditText
-        android:layout_width="wrap_content"
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress"
+            android:ems="10"
+            android:hint="@string/hint_email"
+            android:id="@+id/emailTextField"
+            android:nextFocusForward="@+id/passwordTextField"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:ems="10"
-        android:id="@+id/passwordTextField"
-        android:layout_below="@+id/passwordLabel"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/emailTextField"
-        android:layout_marginBottom="10dp"/>
+        android:layout_below="@id/emailTextLayout"
+        android:id="@+id/passwordTextLayout">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:ems="10"
+            android:hint="@string/hint_password"
+            android:id="@+id/passwordTextField"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"/>
+    
+    </android.support.design.widget.TextInputLayout>
 
     <Button
         android:layout_width="wrap_content"
@@ -45,35 +62,24 @@
         android:text="@string/action_login"
         android:layout_marginTop="20dp"
         android:theme="@style/validButton"
-        android:layout_below="@+id/passwordTextField"
-        android:layout_alignEnd="@+id/passwordTextField"
+        android:layout_below="@+id/passwordTextLayout"
         android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"/>
 
-    <TextView
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/hint_email"
-        android:id="@+id/emailLabel"
-        android:layout_alignParentTop="true"
+        android:id="@+id/createAccountButton"
+        android:singleLine="false"
+        android:text="@string/action_create_acount"
+        android:theme="@style/validButton"
+        android:layout_below="@+id/logInOutButton"
         android:layout_alignParentStart="true"
-        android:textColor="@color/colorPrimary"
-        android:layout_alignEnd="@+id/emailTextField"
-        android:fontFeatureSettings="smcp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/hint_password"
-        android:id="@+id/passwordLabel"
-        android:layout_below="@+id/emailTextField"
-        android:layout_alignParentStart="true"
-        android:textColor="@color/colorPrimary"
-        android:layout_alignEnd="@+id/passwordTextField"
-        android:fontFeatureSettings="smcp"
-        android:enabled="false"/>
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"/>
 
 </RelativeLayout>

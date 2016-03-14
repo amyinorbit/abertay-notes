@@ -107,7 +107,7 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
     }
 
     @Override
-    public void run(Sync.Status status) {
+    public void onSyncResult(Sync.Status status) {
         _progress.dismiss();
         _button.setEnabled(true);
         Model.flushDeleted();

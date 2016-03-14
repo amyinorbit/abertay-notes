@@ -3,10 +3,11 @@
     <item
         android:id="@+id/action_sync"
         android:title="Sync"
+        android:icon="@drawable/ic_sync_white_24dp"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_settings"
         android:title="@string/sync_log_in"
-        android:icon="@drawable/ic_cloud_queue_white_24dp"
+        android:icon="@drawable/ic_person_outline_white_24dp"
         app:showAsAction="ifRoom" />
 </menu>

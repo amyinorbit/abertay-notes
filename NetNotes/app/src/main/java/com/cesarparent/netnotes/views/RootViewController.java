@@ -8,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,8 +27,10 @@ import com.google.android.gms.gcm.GcmListenerService;
 
 public class RootViewController extends AppCompatActivity implements Sync.ResultCallback {
     
-    private NotesAdapter _adapter;
-    SwipeRefreshLayout      _pullToRefresh;
+    private NotesAdapter    _adapter = null;
+    SwipeRefreshLayout      _pullToRefresh = null;
+    MenuItem                _syncMenuItem = null;
+    boolean                 _requestPending = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +38,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
         setContentView(R.layout.view_root);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        
         _pullToRefresh = (SwipeRefreshLayout) findViewById(R.id.pullRefreshView);
         _pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -43,11 +46,6 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
                 refresh();
             }
         });
-        
-        // Model and list view
-        refresh();
-        refreshToken();
-        Model.refresh();
         
         _adapter = new NotesAdapter(this);
         ListView noteListView = (ListView) findViewById(R.id.notesListView);
@@ -59,6 +57,11 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
                 openNote(position);
             }
         });
+        
+        // Model and list view
+        refresh();
+        refreshToken();
+        Model.refresh();
         
         noteListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -83,7 +86,6 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
         NotificationCenter.defaultCenter().addObserver(Notification.MODEL_UPDATE,
                                                        this,
                                                        "onModelChange");
-        _adapter.notifyDataSetChanged();
     }
     
     @Override
@@ -96,6 +98,14 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.root_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem syncMenuItem = menu.findItem(R.id.action_sync);
+        syncMenuItem.setEnabled(!_requestPending);
+        syncMenuItem.getIcon().setAlpha(_requestPending ? 130 : 255);
         return true;
     }
     
@@ -119,9 +129,13 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     }
 
     @Override
-    public void run(Sync.Status status) {
+    public void onSyncResult(Sync.Status status) {
+        _requestPending = false;
         _pullToRefresh.setRefreshing(false);
+        invalidateOptionsMenu();
+        
         if(status == Sync.Status.SUCCESS) { return; }
+        Log.d("RootViewController", "CALLBACK");
         final Snackbar message = Snackbar.make(_pullToRefresh, status.toString(), Snackbar.LENGTH_LONG);
         if(status == Sync.Status.FAIL_UNAUTHORIZED || status == Sync.Status.FAIL_LOGGED_OUT) {
             message.setAction(R.string.action_login, new View.OnClickListener() {
@@ -163,7 +177,15 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     }
     
     public void refresh() {
-        _pullToRefresh.setRefreshing(true);
+        _requestPending = true;
+        // Necessary for the loading indicator to show up when called in onCreate
+        _pullToRefresh.post(new Runnable() {
+            @Override
+            public void run() {
+                _pullToRefresh.setRefreshing(true);
+            }
+        });
+        invalidateOptionsMenu();
         Sync.refresh(this);
     }
     
