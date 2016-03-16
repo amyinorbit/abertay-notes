@@ -13,21 +13,18 @@ EOT;
      */
     public static function AddUser($req, $res) {
         $device = $req->Header("X-NetNotes-DeviceID");
-        if(is_null($device)) {
+        $email = $req->BasicUser();
+        $password = $req->BasicPassword();
+        if(is_null($device) || is_null($email) || is_null($password)) {
             return self::_Unauthorized();
         }
-        $json = json_decode($req->Body(), true);
-        if(is_null($json) || !isset($json["email"]) || !isset($json["password"])) {
-            return self::_InvalidFormat($res);
-        }
-        // validate email format.
-        $email = $json["email"];
+        
         if(preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/", $email) !== 1) {
             return self::_InvalidFormat($res);
         }
         
         $salt = \utils::RandomString(64);
-        $hash = hash("sha256", $salt.$json["password"].$salt);
+        $hash = hash("sha256", $salt.$password.$salt);
         $stmt = \app::Connection()->prepare(self::$userInsert);
         if(!$stmt->execute(["email" => $email, "salt" => $salt, "hash" => $hash])) {
             return self::_Conflict($res);
