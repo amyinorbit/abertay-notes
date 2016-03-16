@@ -13,12 +13,12 @@ public class Authenticator {
 
     private static final String API_KEY = "C162E35C-638C-478A-8A57-F89FA72B9AA6";
     
-    private static final String KEY_EMAIL = "user.email";
-    private static final String KEY_TOKEN = "user.token";
-    private static final String KEY_SEQDELETE = "sync.transaction.delete";
-    private static final String KEY_SEQUPDATE = "sync.transaction.update";
-    private static final String KEY_PUSH_TOKEN = "push.token";
-    private static final String KEY_PUSH_TOKEN_SENT = "push.token_sent";
+    public static final String KEY_EMAIL = "user.email";
+    public static final String KEY_TOKEN = "user.token";
+    public static final String KEY_SEQDELETE = "sync.transaction.delete";
+    public static final String KEY_SEQUPDATE = "sync.transaction.update";
+    public static final String KEY_PUSH_TOKEN = "push.token";
+    public static final String KEY_PUSH_TOKEN_SENT = "push.token_sent";
     
     private static final Object _sequenceIDLock = new Object();
     

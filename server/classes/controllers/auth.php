@@ -3,8 +3,43 @@
 namespace controllers;
 class auth {
     
+    private static $userInsert = <<<EOT
+        INSERT INTO user (email, salt, hash) VALUES (:email, :salt, :hash);
+EOT;
+    
     /**
-     * Returns wether a request is properly authenticated
+     * Adds a user to the system.
+     */
+    public static function AddUser($req, $res) {
+        $device = $req->Header("X-NetNotes-DeviceID");
+        if(is_null($device)) {
+            return self::_Unauthorized();
+        }
+        $json = json_decode($req->Body());
+        if(is_null($json) || !isset($json["email"]) || !isset($json["password"])) {
+            return self::_InvalidFormat();
+        }
+        // validate email format.
+        $email = $json["email"];
+        if(preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/", $email) !== 1) {
+            return self::_InvalidFormat();
+        }
+        
+        $salt = \utils::RandomString(64);
+        $hash = hash("sha256", $salt.$json["password"].$salt);
+        $stmt = \app::Connection()->prepare(self::$userInsert);
+        if(!$stmt->execute(["email" => $email, "salt" => $salt, "hash" => $hash])) {
+            throw new \Exception("Database Error");
+        }
+        $userID = \app::Connection()->lastInsertID();
+        $token = self::RegisterToken($device, $userID);
+        
+        $res->SetBody(["token" => $token]);
+        $res->SetStatusCode(201);
+    }
+    
+    /**
+     * Returns wether a request is properly authenticated.
      */
     public static function ValidateKey($req, $res) {
         $token = $req->Header("Authorization");
@@ -75,8 +110,7 @@ class auth {
     }
     
     /**
-     * Registers 
-     *
+     * Registers a device for a user.
      */
     private static function RegisterToken($deviceID, $userID) {
         $token = \Utils::RandomString(128);
@@ -111,11 +145,29 @@ class auth {
     }
     
     /**
-     * Send a 401 Unauthorized response
+     * Sends a 401 Unauthorized response.
      */
     public static function _Unauthorized($res) {
         $res->SetBody(["fail" => "Unauthorized"]);
         $res->SetStatusCode(401);
+        return false;
+    }
+    
+    /**
+     * Sends a 422 Unprocessable Entity response.
+     */
+    private static function _InvalidFormat($res) {
+        $res->SetStatusCode(422);
+        $res->SetBody(["fail" => "Invalid Entity."]);
+        return false;
+    }
+    
+    /**
+     * Sends a 409 Conflict response.
+     */
+    public static function _Conflict($res) {
+        $res->SetBody(["fail" => "Conflict"]);
+        $res->SetStatusCode(409);
         return false;
     }
 }

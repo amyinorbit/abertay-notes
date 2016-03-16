@@ -27,6 +27,10 @@ $router->OnPost("/token", function($req, $res) {
     controllers\push::RegisterToken($req, $res);
 });
 
+$router->OnPost("/signup", function($req, $res) {
+    controllers\auth::AddUser($req, $res);
+});
+
 $router->OnPost("/login", function($req, $res) {
     $token = controllers\auth::ValidatePassword($req, $res);
     if($token === false) {

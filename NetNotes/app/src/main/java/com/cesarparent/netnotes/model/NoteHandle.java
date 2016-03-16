@@ -1,5 +1,7 @@
 package com.cesarparent.netnotes.model;
 
+import com.cesarparent.utils.Utils;
+
 /**
  * Created by cesar on 05/03/2016.
  * 
@@ -8,13 +10,17 @@ package com.cesarparent.netnotes.model;
  */
 public class NoteHandle {
     
-    public String uniqueID;
-    
-    public String title;
-    
-    public NoteHandle(String uniqueID, String title) {
+    public final String uniqueID;     // The note's unique ID.
+    public final String title;        // The note's truncated contents.
+
+    /**
+     * Creates a new Note handle.
+     * @param uniqueID  The note's unique ID.
+     * @param contents  The note's contents, will be truncated to 128 characters.
+     */
+    public NoteHandle(String uniqueID, String contents) {
         this.uniqueID = uniqueID;
-        this.title = title;
+        this.title = Utils.safeSubString(contents, 0, 127);
     }
     
 }

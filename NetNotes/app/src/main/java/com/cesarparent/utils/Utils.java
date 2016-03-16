@@ -44,6 +44,12 @@ public class Utils {
                                                Base64.NO_WRAP);
     }
     
+    public static String safeSubString(String string, int start, int end) {
+        start = Math.max(start, 0);
+        end = Math.min(end, string.length()-1);
+        return string.substring(start, end);
+    }
+    
     public static String HMACAuth(String username, String token, String key) {
         try {
             Mac crypto = Mac.getInstance("HmacSHA256");

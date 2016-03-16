@@ -61,7 +61,6 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
         // Model and list view
         refresh();
         refreshToken();
-        Model.refresh();
         
         noteListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -83,6 +82,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     @Override
     public void onResume() {
         super.onResume();
+        Model.refresh();
         NotificationCenter.defaultCenter().addObserver(Notification.MODEL_UPDATE,
                                                        this,
                                                        "onModelChange");
@@ -131,11 +131,15 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     @Override
     public void onSyncResult(Sync.Status status) {
         _requestPending = false;
-        _pullToRefresh.setRefreshing(false);
         invalidateOptionsMenu();
+        _pullToRefresh.post(new Runnable() {
+            @Override
+            public void run() {
+                _pullToRefresh.setRefreshing(false);
+            }
+        });
         
         if(status == Sync.Status.SUCCESS) { return; }
-        Log.d("RootViewController", "CALLBACK");
         final Snackbar message = Snackbar.make(_pullToRefresh, status.toString(), Snackbar.LENGTH_LONG);
         if(status == Sync.Status.FAIL_UNAUTHORIZED || status == Sync.Status.FAIL_LOGGED_OUT) {
             message.setAction(R.string.action_login, new View.OnClickListener() {
@@ -185,6 +189,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
                 _pullToRefresh.setRefreshing(true);
             }
         });
+        _pullToRefresh.setRefreshing(true);
         invalidateOptionsMenu();
         Sync.refresh(this);
     }

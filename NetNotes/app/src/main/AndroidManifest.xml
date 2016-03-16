@@ -67,8 +67,7 @@
             android:windowSoftInputMode="adjustResize"
             android:label="@string/title_activity_detail_view_controller"
             android:parentActivityName=".views.RootViewController"
-            android:theme="@style/AppTheme"
-            android:configChanges="keyboardHidden|orientation|screenSize">
+            android:theme="@style/AppTheme">
             <intent-filter
                 android:label="@string/action_create">
                 <action android:name="android.intent.action.SEND"/>

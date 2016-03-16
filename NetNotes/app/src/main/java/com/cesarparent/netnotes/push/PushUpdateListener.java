@@ -8,7 +8,7 @@ import com.google.android.gms.gcm.GcmListenerService;
 /**
  * Created by cesar on 10/03/2016.
  * 
- * 
+ * PushUpdateListener 
  */
 public class PushUpdateListener extends GcmListenerService {
     
@@ -16,7 +16,9 @@ public class PushUpdateListener extends GcmListenerService {
     public void onMessageReceived(String from, Bundle data) {
         Log.d("PushUpdateListener", "Received message from "+from);
         String action = data.getString("sync_action");
-        if(action == null) { return; }
+        if(action == null) {
+            return;
+        }
         
         switch (action) {
             case "update":

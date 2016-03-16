@@ -21,17 +21,22 @@ import java.io.IOException;
 
 /**
  * Created by cesar on 10/03/2016.
+ * 
+ * Service used to register a new, or changed Google API Registration ID with the server.
  */
 public class PushTokenService extends IntentService {
-    
-    private static final String KEY_TOKEN = "push.token";
-    private static final String KEY_TOKEN_SENT = "push.token_sent";
-    
-    
+
+    /**
+     * Creates the Push Token Service.
+     */
     public PushTokenService() {
         super("RegistrationIntentService");
     }
-    
+
+    /**
+     * Receives the start intent, extracts the token from it and sends it to the server.
+     * @param intent        The intent that started the service.
+     */
     @Override
     protected void onHandleIntent(Intent intent) {
         InstanceID instanceID = InstanceID.getInstance(this);
@@ -50,7 +55,11 @@ public class PushTokenService extends IntentService {
             // TODO: To stuff
         }
     }
-    
+
+    /**
+     * Sends a token to the server.
+     * @param token     The token to send to the server.
+     */
     private void sendToken(String token) {
         if(!Authenticator.isLoggedIn()) {
             Log.e("PushTokenService", "User not logged in, cannot send token");
@@ -73,18 +82,17 @@ public class PushTokenService extends IntentService {
             Log.e("PushTokenService", "Error sending token to server("+res.getStatus()+")");
             SharedPreferences.Editor editor = getSharedPreferences(CPApplication.PREFS_TAG,
                                                                    MODE_PRIVATE).edit();
-            editor.remove(KEY_TOKEN);
-            editor.putBoolean(KEY_TOKEN_SENT, false);
+            editor.remove(Authenticator.KEY_PUSH_TOKEN);
+            editor.putBoolean(Authenticator.KEY_PUSH_TOKEN_SENT, false);
             editor.apply();
         } else {
             Log.d("PushTokenService", "Token sent to server");
             SharedPreferences.Editor editor = getSharedPreferences(CPApplication.PREFS_TAG,
                                                                    MODE_PRIVATE).edit();
-            editor.putString(KEY_TOKEN, token);
-            editor.putBoolean(KEY_TOKEN_SENT, true);
+            editor.putString(Authenticator.KEY_PUSH_TOKEN, token);
+            editor.putBoolean(Authenticator.KEY_PUSH_TOKEN_SENT, true);
             editor.apply();
         }
-        
     }
     
     private void subscribe(String token) throws IOException {

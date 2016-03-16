@@ -1,5 +1,7 @@
 package com.cesarparent.netnotes.views;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -35,6 +37,10 @@ public class DetailViewController extends AppCompatActivity {
         _noteTextView = (EditText) findViewById(R.id.noteTextView);
         _noteTextView.setImeActionLabel(getString(R.string.action_save), KeyEvent.KEYCODE_ENTER);
         
+        // Get the note from the saved instance state if there is one
+        if(savedInstanceState != null) {
+            _currentNote = (Note) savedInstanceState.getSerializable("currentNote");
+        }
         processIntent(getIntent());
         
     }
@@ -46,6 +52,12 @@ public class DetailViewController extends AppCompatActivity {
         if(_currentNote.text().equals(_noteTextView.getText().toString())) { return; }
         _currentNote.setText(_noteTextView.getText().toString());
         Model.addNote(_currentNote);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putSerializable("currentNote", _currentNote);
     }
     
     private void processIntent(Intent i) {
@@ -61,7 +73,7 @@ public class DetailViewController extends AppCompatActivity {
                 if(!i.getType().contains("text/plain")) { return; }
                 String data = i.getStringExtra(Intent.EXTRA_TEXT);
                 if(data == null) { return; }
-                _currentNote = new Note("");
+                _currentNote = new Note();
                 _noteTextView.setText(data);
                 break;
             
@@ -81,7 +93,7 @@ public class DetailViewController extends AppCompatActivity {
                 });
                 break;
             default:
-                _currentNote = new Note("");
+                _currentNote = new Note();
         }
     }
 
@@ -107,10 +119,7 @@ public class DetailViewController extends AppCompatActivity {
                 break;
             
             case R.id.action_delete:
-                Model.deleteNoteWithUniqueID(_currentNote.uniqueID());
-                NavUtils.navigateUpFromSameTask(this);
-                _currentNote = null;
-                finish();
+                delete();
                 break;
 
             default:
@@ -124,5 +133,20 @@ public class DetailViewController extends AppCompatActivity {
         share.setType("text/plain");
         share.putExtra(Intent.EXTRA_TEXT, _noteTextView.getText().toString());
         startActivity(Intent.createChooser(share, "Share Note With…"));
+    }
+    
+    public void delete() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Delete Note?")
+               .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                   @Override
+                   public void onClick(DialogInterface dialog, int which) {
+                       Model.deleteNoteWithUniqueID(_currentNote.uniqueID());
+                       NavUtils.navigateUpFromSameTask(DetailViewController.this);
+                       _currentNote = null;
+                       finish();
+                   }
+               })
+               .setNegativeButton("No", null).show();
     }
 }

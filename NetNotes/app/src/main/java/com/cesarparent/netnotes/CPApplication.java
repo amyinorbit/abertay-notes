@@ -17,6 +17,7 @@ public class CPApplication extends Application {
     
     public static final String PREFS_TAG = "com.cesarparent.NetNotes";
 
+    @Override
     public void onCreate() {
         super.onCreate();
         CPApplication._context = getApplicationContext();

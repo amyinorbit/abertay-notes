@@ -18,6 +18,7 @@
         android:id="@+id/noteTextView"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:gravity="top"
+        android:imeOptions="flagNoExtractUi"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
