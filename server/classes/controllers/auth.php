@@ -17,19 +17,19 @@ EOT;
         }
         $json = json_decode($req->Body(), true);
         if(is_null($json) || !isset($json["email"]) || !isset($json["password"])) {
-            return self::_InvalidFormat();
+            return self::_InvalidFormat($res);
         }
         // validate email format.
         $email = $json["email"];
         if(preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/", $email) !== 1) {
-            return self::_InvalidFormat();
+            return self::_InvalidFormat($res);
         }
         
         $salt = \utils::RandomString(64);
         $hash = hash("sha256", $salt.$json["password"].$salt);
         $stmt = \app::Connection()->prepare(self::$userInsert);
         if(!$stmt->execute(["email" => $email, "salt" => $salt, "hash" => $hash])) {
-            return self::_Conflict();
+            return self::_Conflict($res);
         }
         $userID = \app::Connection()->lastInsertID();
         $token = self::RegisterToken($device, $userID);
