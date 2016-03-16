@@ -116,9 +116,7 @@ class request {
     private function _ParseBasic() {
         $token = $this->Header("Authorization");
         if(is_null($token)) { return; }
-        if(strpos(strtolower($token), "basic") !== 0) {
-            return self::_Unauthorized($res);
-        }
+        if(strpos(strtolower($token), "basic") !== 0) { return; }
         $token = base64_decode(substr($token, 6));
         $parts = explode(":", $token);
         if(count($parts) !== 2) { return; }
