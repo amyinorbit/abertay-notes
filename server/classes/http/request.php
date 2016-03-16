@@ -35,6 +35,7 @@ class request {
         
         $this->_params = $this->_SafeInput($_GET);
         $this->_url = "/".trim(parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH), "/");
+        $this->_ParseBasic();
     }
     
     /**
