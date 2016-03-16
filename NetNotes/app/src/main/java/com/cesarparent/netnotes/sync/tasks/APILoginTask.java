@@ -62,7 +62,7 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             Authenticator.invalidateCredentials();
             NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_FAIL,
                                                                 null);
-            Log.e("APILoginTask", "Failed to log in");
+            Log.e("APILoginTask", "Failed to log in: " + response.getStatus());
             callback(Sync.Status.FAIL_UNAUTHORIZED);
         }
     }

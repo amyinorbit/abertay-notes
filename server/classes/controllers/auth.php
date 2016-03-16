@@ -27,7 +27,7 @@ EOT;
         $hash = hash("sha256", $salt.$password.$salt);
         $stmt = \app::Connection()->prepare(self::$userInsert);
         if(!$stmt->execute(["email" => $email, "salt" => $salt, "hash" => $hash])) {
-            return self::_BadRequest($res);
+            return self::_Conflict($res);
         }
         $userID = \app::Connection()->lastInsertID();
         $token = self::RegisterToken($device, $userID);
