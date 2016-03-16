@@ -57,7 +57,7 @@ $server = new http\server(function($req, $res) use($router) {
 // Encode every response as JSON
 $server->FilterOut(function($res) {
     $res->SetHeader("Content-Type", "application/json");
-    $res->SetHeader("X-NetNotes-Time", \Utils::Date());
+    $res->SetHeader("X-NetNotes-Time", strval(time()));
     $res->SetBody(json_encode($res->Body(), JSON_UNESCAPED_SLASHES));
 });
 

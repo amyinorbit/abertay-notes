@@ -8,22 +8,19 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.NotesAdapter;
 import com.cesarparent.netnotes.push.PushTokenService;
-import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.netnotes.sync.SyncUtils;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;
-import com.google.android.gms.gcm.GcmListenerService;
 
 public class RootViewController extends AppCompatActivity implements Sync.ResultCallback {
     
@@ -204,7 +201,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     }
     
     public void refreshToken() {
-        if(Authenticator.isTokenSent()) { return; }
+        if(SyncUtils.isTokenSent()) { return; }
         Intent token = new Intent(this, PushTokenService.class);
         startService(token);
     }

@@ -10,11 +10,14 @@
     <string name="loginmsg_success">Logged In</string>
     
     <string name="status_success">Sync Finished</string>
-    <string name="status_fail_logged_out">Sync Failed: Not Logged In</string>
-    <string name="status_fail_bad_request">Sync Failed: Service Error</string>
-    <string name="status_fail_conflict">Cannot Create Account: Email Already Taken</string>
-    <string name="status_fail_unauthorized">Sync Failed: Invalid Credentials</string>
-    <string name="status_fail_no_network">Sync Failed: Network Unavailable</string>
+    <string name="status_fail_logged_out">You Must Be Logged In</string>
+    <string name="status_fail_bad_request">Service Error</string>
+    <string name="status_fail_unauthorized">Invalid Credentials</string>
+    <string name="status_fail_conflict">This Account Already Exists</string>
+    <string name="status_fail_server_error">Server Error</string>
+    <string name="status_fail_no_network">Network Unavailable</string>
+    <string name="status_fail_connection_error">Connection Error</string>
+    <string name="status_fail">Sync Failed</string>
     
     <string name="action_account_manager">Account</string>
     <string name="action_create">Create Note</string>

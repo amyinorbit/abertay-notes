@@ -21,13 +21,17 @@ import java.util.concurrent.Executors;
  */
 public class Sync {
     
+    
     public enum Status {
         SUCCESS                 (R.string.status_success),
+        FAIL                    (R.string.status_fail),
         FAIL_LOGGED_OUT         (R.string.status_fail_logged_out),
         FAIL_BAD_REQUEST        (R.string.status_fail_bad_request),
-        FAIL_CONFLICT           (R.string.status_fail_conflict),
         FAIL_UNAUTHORIZED       (R.string.status_fail_unauthorized),
-        FAIL_NO_NETWORK         (R.string.status_fail_no_network);
+        FAIL_CONFLICT           (R.string.status_fail_conflict),
+        FAIL_SERVER_ERROR       (R.string.status_fail_server_error),
+        FAIL_NO_NETWORK         (R.string.status_fail_no_network),
+        FAIL_CONNECTION_ERROR   (R.string.status_fail_connection_error);
         
         private String message;
         
@@ -54,14 +58,14 @@ public class Sync {
     
     @UiThread
     public static void logOut() {
-        Authenticator.invalidateCredentials();
-        Authenticator.invalidateSyncDates();
+        SyncUtils.invalidateCredentials();
+        SyncUtils.invalidateSyncDates();
         Model.flushDeleted();
     }
     
     @UiThread
     public static void refresh(@NonNull final ResultCallback onResult) {
-        if(!Authenticator.isLoggedIn()) {
+        if(!SyncUtils.isLoggedIn()) {
             onResult.onSyncResult(Status.FAIL_LOGGED_OUT);
             return;
         }
@@ -80,19 +84,19 @@ public class Sync {
     
     @UiThread
     public static void refreshDelete() {
-        if(!Authenticator.isLoggedIn()) { return; }
+        if(!SyncUtils.isLoggedIn()) { return; }
         new SyncDeleteTask(null).executeOnExecutor(SERIAL_QUEUE);
     }
     
     @UiThread
     public static void refreshUpdate() {
-        if(!Authenticator.isLoggedIn()) { return; }
+        if(!SyncUtils.isLoggedIn()) { return; }
         new SyncUpdateTask(null).executeOnExecutor(SERIAL_QUEUE);
     }
     
     @UiThread
     public static void refresh() {
-        if(!Authenticator.isLoggedIn()) { return; }
+        if(!SyncUtils.isLoggedIn()) { return; }
         
         new SyncDeleteTask(null).executeOnExecutor(SERIAL_QUEUE);
         new SyncUpdateTask(null).executeOnExecutor(SERIAL_QUEUE);

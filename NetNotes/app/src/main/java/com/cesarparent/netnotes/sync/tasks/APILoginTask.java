@@ -5,7 +5,7 @@ import android.util.Log;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.sync.APIRequest;
 import com.cesarparent.netnotes.sync.APIResponse;
-import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.netnotes.sync.SyncUtils;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.Utils;
@@ -44,26 +44,26 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
 
     @Override
     protected void onPostExecute(APIResponse response) {
-        Authenticator.invalidateSyncDates();
+        SyncUtils.invalidateSyncDates();
         Model.flushDeleted();
-        if(response.getStatus() == APIResponse.SUCCESS) {
+        if(response.getStatus() == Sync.Status.SUCCESS) {
             try {
                 String token = response.getBody().getString("token");
-                Authenticator.setCredentials(_email, token);
+                SyncUtils.setCredentials(_email, token);
                 NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_SUCCESS,
                                                                     token);
                 callback(Sync.Status.SUCCESS);
             }
             catch(JSONException e) {
-                callback(Sync.Status.FAIL_BAD_REQUEST);
                 Log.e("APILoginTask", "Invalid Response Format");
+                callback(Sync.Status.FAIL);
             }
         } else {
-            Authenticator.invalidateCredentials();
+            SyncUtils.invalidateCredentials();
             NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_FAIL,
                                                                 null);
             Log.e("APILoginTask", "Failed to log in: " + response.getStatus());
-            callback(Sync.Status.FAIL_UNAUTHORIZED);
+            callback(response.getStatus());
         }
     }
     

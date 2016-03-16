@@ -106,26 +106,26 @@ public class APIRequest {
                 
                 String transaction = _connection.getHeaderField("X-NetNotes-Transaction");
                 
-                return new APIResponse(json, code, transaction);
+                return new APIResponse(json, Sync.Status.SUCCESS, transaction);
             }
             else if(code == 401) {
-                return new APIResponse(APIResponse.UNAUTHORIZED);
+                return new APIResponse(Sync.Status.FAIL_UNAUTHORIZED);
             }
             else if(code == 409) {
-                return new APIResponse(APIResponse.CONFLICT);
+                return new APIResponse(Sync.Status.FAIL_CONFLICT);
             }
             else if(code > 401 && code < 500) {
-                return new APIResponse(APIResponse.BAD_REQUEST);
+                return new APIResponse(Sync.Status.FAIL_BAD_REQUEST);
             }
             else if(code >= 500) {
-                return new APIResponse(APIResponse.SERVER_ERROR);
+                return new APIResponse(Sync.Status.FAIL_SERVER_ERROR);
             }
             
         }
         catch(IOException e) {
             Log.e("APIRequest", "Connection Error: "+e.getMessage());
             e.printStackTrace();
-            return new APIResponse(APIResponse.CONNECTION_ERROR);
+            return new APIResponse(Sync.Status.FAIL_CONNECTION_ERROR);
         }
         finally {
             if(_connection != null) { _connection.disconnect(); }
@@ -136,7 +136,7 @@ public class APIRequest {
                 Log.e("APIRequest", "Error closing an output buffer: "+e.getMessage());
             }
         }
-        return new APIResponse(APIResponse.INVALID_STATUS);
+        return new APIResponse(Sync.Status.FAIL);
     }
     
 }

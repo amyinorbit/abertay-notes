@@ -3,7 +3,6 @@ package com.cesarparent.netnotes.model;
 import android.database.Cursor;
 import android.util.Log;
 
-import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;

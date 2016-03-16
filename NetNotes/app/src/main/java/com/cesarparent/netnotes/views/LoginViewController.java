@@ -1,9 +1,9 @@
 package com.cesarparent.netnotes.views;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.push.PushTokenService;
-import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.netnotes.sync.SyncUtils;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Utils;
 
@@ -33,7 +33,7 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        if(Authenticator.isLoggedIn()) {
+        if(SyncUtils.isLoggedIn()) {
             showLoggedIn(false);
         } else {
             showLogIn(false);
@@ -46,7 +46,7 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
         _emailTextField = (TextView)findViewById(R.id.emailTextField);
         _button = (Button)findViewById(R.id.logInOutButton);
         _passwordTextField = null;
-        _emailTextField.setText(Authenticator.getEmail());
+        _emailTextField.setText(SyncUtils.getEmail());
         
         setUpToolbar();
     }
@@ -108,7 +108,7 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
     public void doRequest(boolean signup) {
         Utils.hideSoftKeyboard(this);
         _button.setEnabled(false);
-        _progress = ProgressDialog.show(this, "Login In", "Please wait", true);
+        _progress = ProgressDialog.show(this, "Logging In", "Please wait", true);
         Sync.logIn(signup,
                    _emailTextField.getText().toString(),
                    _passwordTextField.getText().toString(),
@@ -122,10 +122,14 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
         Model.flushDeleted();
         if(status == Sync.Status.SUCCESS) {
             showLoggedIn(true);
+            Sync.refresh();
             Intent i = new Intent(this, PushTokenService.class);
             startService(i);
         } else {
-            Snackbar.make(_button, R.string.loginmsg_failed, Snackbar.LENGTH_SHORT).show();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Error")
+                   .setMessage(status.toString())
+                   .setPositiveButton(android.R.string.ok, null).show();
         }
     }
 }

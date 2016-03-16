@@ -9,7 +9,8 @@ import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.sync.APIRequest;
 import com.cesarparent.netnotes.sync.APIResponse;
-import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.netnotes.sync.SyncUtils;
+import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;
 import com.google.android.gms.gcm.GcmPubSub;
@@ -61,12 +62,12 @@ public class PushTokenService extends IntentService {
      * @param token     The token to send to the server.
      */
     private void sendToken(String token) {
-        if(!Authenticator.isLoggedIn()) {
+        if(!SyncUtils.isLoggedIn()) {
             Log.e("PushTokenService", "User not logged in, cannot send token");
             return;
         }
         APIRequest req = new APIRequest(APIRequest.ENDPOINT_TOKEN, "0");
-        req.setAuthtorization(Authenticator.getAuthToken());
+        req.setAuthtorization(SyncUtils.getAuthToken());
         JSONObject payload = new JSONObject();
         try {
             payload.put("token", token);
@@ -78,19 +79,19 @@ public class PushTokenService extends IntentService {
         req.putData(payload);
         APIResponse res = req.send();
         
-        if(res.getStatus() != APIResponse.SUCCESS) {
-            Log.e("PushTokenService", "Error sending token to server("+res.getStatus()+")");
+        if(res.getStatus() != Sync.Status.SUCCESS) {
+            Log.e("PushTokenService", "Error sending token to server ("+res.getStatus()+")");
             SharedPreferences.Editor editor = getSharedPreferences(CPApplication.PREFS_TAG,
                                                                    MODE_PRIVATE).edit();
-            editor.remove(Authenticator.KEY_PUSH_TOKEN);
-            editor.putBoolean(Authenticator.KEY_PUSH_TOKEN_SENT, false);
+            editor.remove(SyncUtils.KEY_PUSH_TOKEN);
+            editor.putBoolean(SyncUtils.KEY_PUSH_TOKEN_SENT, false);
             editor.apply();
         } else {
             Log.d("PushTokenService", "Token sent to server");
             SharedPreferences.Editor editor = getSharedPreferences(CPApplication.PREFS_TAG,
                                                                    MODE_PRIVATE).edit();
-            editor.putString(Authenticator.KEY_PUSH_TOKEN, token);
-            editor.putBoolean(Authenticator.KEY_PUSH_TOKEN_SENT, true);
+            editor.putString(SyncUtils.KEY_PUSH_TOKEN, token);
+            editor.putBoolean(SyncUtils.KEY_PUSH_TOKEN_SENT, true);
             editor.apply();
         }
     }

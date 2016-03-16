@@ -10,7 +10,7 @@ import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.sync.APIRequest;
 import com.cesarparent.netnotes.sync.APIResponse;
-import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.netnotes.sync.SyncUtils;
 import com.cesarparent.netnotes.sync.Sync;
 
 import org.json.JSONArray;
@@ -59,22 +59,21 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
 
         // Send the request and get data back
         APIRequest req = new APIRequest(_endpoint, transaction);
-        req.setAuthtorization(Authenticator.getAuthToken());
+        req.setAuthtorization(SyncUtils.getAuthToken());
         req.putData(changes);
         final APIResponse res = req.send();
 
         // If Unauthorised, invalidate credentials
-        if(res.getStatus() == APIResponse.UNAUTHORIZED) {
-            Authenticator.invalidateCredentials();
-            Authenticator.invalidateSyncDates();
-            return Sync.Status.FAIL_UNAUTHORIZED;
+        if(res.getStatus() == Sync.Status.FAIL_UNAUTHORIZED) {
+            SyncUtils.invalidateCredentials();
+            SyncUtils.invalidateSyncDates();
         }
-        if(res.getStatus() != APIResponse.SUCCESS) {
-            return Sync.Status.FAIL_BAD_REQUEST;
+        if(res.getStatus() != Sync.Status.SUCCESS) {
+            return res.getStatus();
         }
 
         // Parse the received JSON
-        return processResponseJSON(res) ? Sync.Status.SUCCESS : Sync.Status.FAIL_BAD_REQUEST;
+        return processResponseJSON(res) ? Sync.Status.SUCCESS : Sync.Status.FAIL;
     }
 
     @Override
@@ -105,17 +104,17 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
 
     private String getTransactionID() {
         if(_endpoint.equals(APIRequest.ENDPOINT_NOTES)) {
-            return Authenticator.getUpdateTransactionID();
+            return SyncUtils.getUpdateTransactionID();
         } else {
-            return Authenticator.getDeleteTransactionID();
+            return SyncUtils.getDeleteTransactionID();
         }
     }
 
     private void setTransactionID(String id) {
         if(_endpoint.equals(APIRequest.ENDPOINT_NOTES)) {
-            Authenticator.setUpdateTransactionID(id);
+            SyncUtils.setUpdateTransactionID(id);
         } else {
-            Authenticator.setDeleteTransactionID(id);
+            SyncUtils.setDeleteTransactionID(id);
         }
     }
     

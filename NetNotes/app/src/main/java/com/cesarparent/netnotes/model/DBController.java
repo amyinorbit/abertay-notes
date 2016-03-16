@@ -9,7 +9,7 @@ import android.util.Log;
 
 
 import com.cesarparent.netnotes.CPApplication;
-import com.cesarparent.netnotes.sync.Authenticator;
+import com.cesarparent.netnotes.sync.SyncUtils;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -108,7 +108,7 @@ public class DBController extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Authenticator.invalidateSyncDates();
+        SyncUtils.invalidateSyncDates();
         for(String query : SQL_DROP) {
             db.execSQL(query);
         }

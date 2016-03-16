@@ -12,25 +12,16 @@ import org.json.JSONObject;
  */
 public class APIResponse {
     
-    public static final int INVALID_STATUS =    -3;
-    public static final int CONNECTION_ERROR =  -2;
-    public static final int DATA_ERROR =        -1;
-    public static final int SUCCESS =           200;
-    public static final int BAD_REQUEST =       400;
-    public static final int UNAUTHORIZED =      401;
-    public static final int CONFLICT =          409;
-    public static final int SERVER_ERROR =      500;
+    private Sync.Status     _status;
+    private String          _transaction;
+    private JSONObject      _body;
     
-    private int         _status;
-    private String _transaction;
-    private JSONObject  _body;
-    
-    public APIResponse(int status) {
+    public APIResponse(Sync.Status status) {
         _status = status;
         _body = null;
     }
     
-    public APIResponse(String data, int status, String time) {
+    public APIResponse(String data, Sync.Status status, String time) {
         _status = status;
         try {
             _body = new JSONObject(data);
@@ -38,7 +29,7 @@ public class APIResponse {
         }
         catch(JSONException e) {
             _body = null;
-            _status = DATA_ERROR;
+            _status = Sync.Status.FAIL;
         }
         _transaction = time;
     }
@@ -47,7 +38,7 @@ public class APIResponse {
         return _transaction;
     }
     
-    public int getStatus() {
+    public Sync.Status getStatus() {
         return _status;
     }
     
