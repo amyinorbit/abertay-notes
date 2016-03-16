@@ -25,6 +25,7 @@ public class Sync {
         SUCCESS                 (R.string.status_success),
         FAIL_LOGGED_OUT         (R.string.status_fail_logged_out),
         FAIL_BAD_REQUEST        (R.string.status_fail_bad_request),
+        FAIL_CONFLICT           (R.string.status_fail_conflict),
         FAIL_UNAUTHORIZED       (R.string.status_fail_unauthorized),
         FAIL_NO_NETWORK         (R.string.status_fail_no_network);
         

@@ -46,7 +46,7 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
     protected void onPostExecute(APIResponse response) {
         Authenticator.invalidateSyncDates();
         Model.flushDeleted();
-        if(response.getStatus() == 200) {
+        if(response.getStatus() == APIResponse.SUCCESS) {
             try {
                 String token = response.getBody().getString("token");
                 Authenticator.setCredentials(_email, token);
@@ -62,7 +62,7 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             Authenticator.invalidateCredentials();
             NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_FAIL,
                                                                 null);
-            Log.e("APILoginTask", "Invalid Response Format");
+            Log.e("APILoginTask", "Failed to log in");
             callback(Sync.Status.FAIL_UNAUTHORIZED);
         }
     }

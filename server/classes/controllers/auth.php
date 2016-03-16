@@ -159,9 +159,9 @@ EOT;
     /**
      * Sends a 409 Conflict response.
      */
-    public static function _BadRequest($res) {
-        $res->SetBody(["fail" => "Bad Request"]);
-        $res->SetStatusCode(400);
+    public static function _Conflict($res) {
+        $res->SetBody(["fail" => "Email Already Exists"]);
+        $res->SetStatusCode(409);
         return false;
     }
 }

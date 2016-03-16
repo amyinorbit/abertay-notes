@@ -12,6 +12,7 @@
     <string name="status_success">Sync Finished</string>
     <string name="status_fail_logged_out">Sync Failed: Not Logged In</string>
     <string name="status_fail_bad_request">Sync Failed: Service Error</string>
+    <string name="status_fail_conflict">Cannot Create Account: Email Already Taken</string>
     <string name="status_fail_unauthorized">Sync Failed: Invalid Credentials</string>
     <string name="status_fail_no_network">Sync Failed: Network Unavailable</string>
     

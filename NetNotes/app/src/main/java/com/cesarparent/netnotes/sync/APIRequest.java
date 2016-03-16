@@ -111,6 +111,9 @@ public class APIRequest {
             else if(code == 401) {
                 return new APIResponse(APIResponse.UNAUTHORIZED);
             }
+            else if(code == 409) {
+                return new APIResponse(APIResponse.CONFLICT);
+            }
             else if(code > 401 && code < 500) {
                 return new APIResponse(APIResponse.BAD_REQUEST);
             }
