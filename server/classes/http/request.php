@@ -17,10 +17,15 @@ class request {
     private $_params;
     private $_body;
     
+    private $_basic_username ;
+    private $_basic_password;
+    
     public function __construct() {
         $this->_headers = [];
         $this->_params = [];
         $this->_body = "";
+        $this->_basic_username = null;
+        $this->_basic_password = null;
         
         $this->_method = $_SERVER["REQUEST_METHOD"];
         $this->_headers = getallheaders();
@@ -28,7 +33,7 @@ class request {
         $body = file_get_contents("php://input");
         $this->_body = is_null($body) ? "" : $body;
         
-        $this->_params = $this->_safe_input($_GET);
+        $this->_params = $this->_SafeInput($_GET);
         $this->_url = "/".trim(parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH), "/");
     }
     
@@ -76,21 +81,47 @@ class request {
     }
     
     /**
-     * Return a tag-stripped, whitespace-trimmed array containing safe request
+     * Returns the HTTP Basic Auth username
+     */
+    public function BasicUser() {
+        return $this->_basic_username;
+    }
+    
+    public function BasicPassword() {
+        return $this->_basic_password;
+    }
+    
+    /**
+     * Returns a tag-stripped, whitespace-trimmed array containing safe request
      * data.
      * @param   $input      The array to safe.
      * @return  A sanitised array.
      */
-    private function _safe_input($input) {
+    private function _SafeInput($input) {
 		$cleaned = Array();
 		if(is_array($input)) {
 			foreach($input as $k => $v) {
-				$cleaned[$k] = $this->_safe_input($v);
+				$cleaned[$k] = $this->_SafeInput($v);
 			}
 		} else {
 			$cleaned = is_string($input)? trim(strip_tags($input)) : $input;
 		}
 		return $cleaned;
+    }
+    
+    /**
+     * Parses the username and password if a HTTP Basic authentication header is sent
+     */
+    private function _ParseBasic() {
+        $token = $this->Header("Authorization");
+        if(is_null($token)) { return; }
+        if(strpos(strtolower($token), "basic") !== 0) {
+            return self::_Unauthorized($res);
+        }
+        $token = base64_decode(substr($token, 6));
+        $parts = explode(":", $token);
+        if(count($parts) !== 2) { return; }
+        list($this->_basic_username, $this->_basic_password) = $parts;
     }
     
 }

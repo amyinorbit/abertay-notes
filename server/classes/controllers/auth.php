@@ -9,6 +9,7 @@ EOT;
     
     /**
      * Adds a user to the system.
+     * TODO: Change to Authorization header
      */
     public static function AddUser($req, $res) {
         $device = $req->Header("X-NetNotes-DeviceID");
