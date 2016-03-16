@@ -27,7 +27,7 @@ EOT;
         $hash = hash("sha256", $salt.$password.$salt);
         $stmt = \app::Connection()->prepare(self::$userInsert);
         if(!$stmt->execute(["email" => $email, "salt" => $salt, "hash" => $hash])) {
-            return self::_Conflict($res);
+            return self::_BadRequest($res);
         }
         $userID = \app::Connection()->lastInsertID();
         $token = self::RegisterToken($device, $userID);
@@ -159,9 +159,9 @@ EOT;
     /**
      * Sends a 409 Conflict response.
      */
-    public static function _Conflict($res) {
-        $res->SetBody(["fail" => "Conflict"]);
-        $res->SetStatusCode(409);
+    public static function _BadRequest($res) {
+        $res->SetBody(["fail" => "Bad Request"]);
+        $res->SetStatusCode(400);
         return false;
     }
 }
