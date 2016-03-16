@@ -5,7 +5,7 @@
  */
 require_once(__DIR__."/../loader.php");
 
-error_reporting(E_ALL);
+error_reporting(0);
 
 $router = new http\router;
 $auth = new controllers\auth;

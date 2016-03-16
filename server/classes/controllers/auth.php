@@ -15,7 +15,7 @@ EOT;
         if(is_null($device)) {
             return self::_Unauthorized();
         }
-        $json = json_decode($req->Body());
+        $json = json_decode($req->Body(), true);
         if(is_null($json) || !isset($json["email"]) || !isset($json["password"])) {
             return self::_InvalidFormat();
         }
