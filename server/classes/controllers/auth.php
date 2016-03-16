@@ -83,18 +83,14 @@ EOT;
     public static function ValidatePassword($req, $res) {
         
         $device = $req->Header("X-NetNotes-DeviceID");
-        $token = $req->Header("Authorization");
-        if(is_null($token) || is_null($device)) {
+        $email = $req->BasicUser();
+        $password = $req->BasicPassword();
+        if(is_null($device) || is_null($email) || is_null($password)) {
             return self::_Unauthorized($res);
         }
-        if(strpos(strtolower($token), "basic") !== 0) {
-            return self::_Unauthorized($res);
-        }
-        $token = base64_decode(substr($token, 6));
-        list($userID, $password) = explode(":", $token);
         
         $stmt = \app::Connection()->prepare("SELECT * FROM `user` WHERE email = :email");
-        $stmt->execute(["email" => $userID]);
+        $stmt->execute(["email" => $email]);
         $user = $stmt->fetch(\PDO::FETCH_ASSOC);
         if(!$user) {
             return self::_Unauthorized($res);
