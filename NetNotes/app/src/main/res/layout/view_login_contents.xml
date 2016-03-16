@@ -76,6 +76,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/createAccountButton"
         android:singleLine="false"
+        android:onClick="signUp"
         android:text="@string/action_create_acount"
         android:theme="@style/validButton"
         android:layout_below="@+id/logInOutButton"

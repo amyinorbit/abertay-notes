@@ -33,7 +33,7 @@ EOT;
         $token = self::RegisterToken($device, $userID);
         
         $res->SetBody(["token" => $token]);
-        $res->SetStatusCode(201);
+        $res->SetStatusCode(200);
     }
     
     /**

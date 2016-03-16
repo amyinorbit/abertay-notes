@@ -46,8 +46,8 @@ public class Sync {
     }
     
     @UiThread
-    public static void logIn(String email, String password, ResultCallback onResult) {
-        APILoginTask task = new APILoginTask(onResult);
+    public static void logIn(boolean signup, String email, String password, ResultCallback onResult) {
+        APILoginTask task = new APILoginTask(signup, onResult);
         task.executeOnExecutor(SERIAL_QUEUE, email, password);
     }
     

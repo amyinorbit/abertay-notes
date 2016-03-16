@@ -1,12 +1,8 @@
 package com.cesarparent.netnotes.sync.tasks;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
-
-import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.model.Model;
-import com.cesarparent.netnotes.push.PushTokenService;
 import com.cesarparent.netnotes.sync.APIRequest;
 import com.cesarparent.netnotes.sync.APIResponse;
 import com.cesarparent.netnotes.sync.Authenticator;
@@ -24,9 +20,11 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
 
     private Sync.ResultCallback _onResult;
     private String              _email;
+    private boolean             _signup;
 
-    public APILoginTask(Sync.ResultCallback onResult) {
+    public APILoginTask(boolean create, Sync.ResultCallback onResult) {
         _onResult = onResult;
+        _signup = create;
     }
 
     @Override
@@ -38,7 +36,8 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             System.exit(2);
         }
         _email = params[0];
-        APIRequest request = new APIRequest(APIRequest.ENDPOINT_LOGIN, "0");
+        String endpoint = _signup ? APIRequest.ENDPOINT_SIGNUP : APIRequest.ENDPOINT_LOGIN;
+        APIRequest request = new APIRequest(endpoint, "0");
         request.setAuthtorization(Utils.HTTPBasicAuth(params[0], params[1]));
         return request.send();
     }

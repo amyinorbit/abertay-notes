@@ -98,10 +98,19 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
     }
     
     public void logIn(View sender) {
+        doRequest(false);
+    }
+    
+    public void signUp(View sender) {
+        doRequest(true);
+    }
+    
+    public void doRequest(boolean signup) {
         Utils.hideSoftKeyboard(this);
         _button.setEnabled(false);
         _progress = ProgressDialog.show(this, "Login In", "Please wait", true);
-        Sync.logIn(_emailTextField.getText().toString(),
+        Sync.logIn(signup,
+                   _emailTextField.getText().toString(),
                    _passwordTextField.getText().toString(),
                    this);
     }

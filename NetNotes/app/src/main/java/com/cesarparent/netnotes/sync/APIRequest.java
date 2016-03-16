@@ -27,6 +27,7 @@ public class APIRequest {
     public static final String ENDPOINT_NOTES =     "/notes";
     public static final String ENDPOINT_DELETE =    "/deleted";
     public static final String ENDPOINT_LOGIN =     "/login";
+    public static final String ENDPOINT_SIGNUP =    "/signup";
     public static final String ENDPOINT_TOKEN =     "/token";
     
     private HttpURLConnection _connection;
