@@ -29,7 +29,7 @@ EOT;
         $hash = hash("sha256", $salt.$json["password"].$salt);
         $stmt = \app::Connection()->prepare(self::$userInsert);
         if(!$stmt->execute(["email" => $email, "salt" => $salt, "hash" => $hash])) {
-            throw new \Exception("Database Error");
+            return self::_Conflict();
         }
         $userID = \app::Connection()->lastInsertID();
         $token = self::RegisterToken($device, $userID);
