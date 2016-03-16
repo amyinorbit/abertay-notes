@@ -16,6 +16,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -30,12 +32,14 @@ public class Utils {
     public static String JSONDate(Date date) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZZZ",
                                                        CPApplication.locale());
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
         return format.format(date);
     }
     
     public static Date dateFromJSON(String date) throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZZZ",
                                                        CPApplication.locale());
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
         return format.parse(date);
     }
     
@@ -46,7 +50,7 @@ public class Utils {
     
     public static String safeSubString(String string, int start, int end) {
         start = Math.max(start, 0);
-        end = Math.min(end, string.length()-1);
+        end = Math.min(end, string.length());
         return string.substring(start, end);
     }
     

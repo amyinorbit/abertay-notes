@@ -1,13 +1,10 @@
 package com.cesarparent.netnotes.sync;
 
 import android.util.Log;
-
 import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.R;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,7 +27,8 @@ public class APIRequest {
     public static final String ENDPOINT_SIGNUP =    "/signup";
     public static final String ENDPOINT_TOKEN =     "/token";
     
-    private HttpURLConnection _connection;
+    private HttpURLConnection   _connection;
+    private long                _startTime;
     
     public APIRequest(String endpoint, String transaction) {
         try {
@@ -49,6 +47,7 @@ public class APIRequest {
         catch(Exception e) {
             System.exit(2);
         }
+        _startTime = System.currentTimeMillis();
     }
     
     public void setAuthtorization(String token) {
@@ -58,7 +57,7 @@ public class APIRequest {
     public void putData(JSONObject body) {
         _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         putData(body.toString());
-        Log.d("APIRequest", "Request Body: "+body.toString());
+        Log.d("APIRequest", "Request Body: " + body.toString());
     }
     
     
@@ -105,7 +104,7 @@ public class APIRequest {
                 }
                 
                 String transaction = _connection.getHeaderField("X-NetNotes-Transaction");
-                
+                _calculateTimeOffset();
                 return new APIResponse(json, Sync.Status.SUCCESS, transaction);
             }
             else if(code == 401) {
@@ -139,4 +138,12 @@ public class APIRequest {
         return new APIResponse(Sync.Status.FAIL);
     }
     
+    private void _calculateTimeOffset() {
+        // Convert to a millisecond-level timestamp
+        long client = (_startTime + System.currentTimeMillis()) / 2;
+        long server = Long.parseLong(_connection.getHeaderField("X-NetNotes-Time")) * 1000;
+        long offset = server - client;
+        SyncUtils.setTimeOffset(offset);
+        Log.d("APIRequest", "Calculated time offset: " + offset + "ms");
+    }
 }

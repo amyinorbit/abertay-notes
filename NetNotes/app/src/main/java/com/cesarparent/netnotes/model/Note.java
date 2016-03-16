@@ -1,5 +1,6 @@
 package com.cesarparent.netnotes.model;
 
+import com.cesarparent.netnotes.sync.SyncUtils;
 import com.cesarparent.utils.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,8 +38,8 @@ public class Note implements Serializable {
             _sortDate = Utils.dateFromJSON(sortDate);
         }
         catch(ParseException e) {
-            _creationDate = new Date();
-            _sortDate = new Date();
+            _creationDate = SyncUtils.now();
+            _sortDate = SyncUtils.now();
         }
     }
 
@@ -47,8 +48,8 @@ public class Note implements Serializable {
      * @param text          The note's contents.
      */
     public Note(String text) {
-        _sortDate = new Date();
-        _creationDate = new Date();
+        _sortDate = SyncUtils.now();
+        _creationDate = SyncUtils.now();
         _text = text;
         _uniqueID = UUID.randomUUID().toString();
     }
@@ -141,7 +142,7 @@ public class Note implements Serializable {
      */
     public void setText(String text) {
         _text = text;
-        _sortDate = new Date();
+        _sortDate = SyncUtils.now();
     }
 
 }
