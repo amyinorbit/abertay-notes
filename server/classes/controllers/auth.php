@@ -16,7 +16,7 @@ EOT;
         $email = $req->BasicUser();
         $password = $req->BasicPassword();
         if(is_null($device) || is_null($email) || is_null($password)) {
-            return self::_Unauthorized();
+            return self::_Unauthorized($res);
         }
         
         if(preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/", $email) !== 1) {
