@@ -7,10 +7,8 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -21,27 +19,38 @@ import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Utils;
 
+/**
+ * Created by Cesar Parent on 04/03/2016.
+ *
+ * View Controller for the login/create account activity.
+ */
 public class LoginViewController extends AppCompatActivity implements Sync.ResultCallback {
     
-    private ProgressDialog  _progress;
-    private TextView        _emailTextField;
-    private EditText        _passwordTextField;
-    private Button          _button;
-    
+    private ProgressDialog  _progress;          // The spinner dialog shown on login.
+    private TextView        _emailTextField;    // The email input field.
+    private EditText        _passwordTextField; // The password input field.
+    private Button          _button;            // The subbmit/logout button.
 
+    /**
+     * Creates the activity.
+     * @param savedInstanceState    The saved state if there's any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         if(Authenticator.isLoggedIn()) {
-            showLoggedIn(false);
+            showLoggedIn();
         } else {
-            showLogIn(false);
+            showLogIn();
         }
     }
-    
-    private void showLoggedIn(boolean fade) {
-        smoothTransition(R.layout.view_logged_in, fade);
+
+    /**
+     * Show the logged-in layout.
+     */
+    private void showLoggedIn() {
+        setContentView(R.layout.view_logged_in);
         
         _emailTextField = (TextView)findViewById(R.id.emailTextField);
         _button = (Button)findViewById(R.id.logInOutButton);
@@ -50,9 +59,12 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
         
         setUpToolbar();
     }
-    
-    private void showLogIn(boolean fade) {
-        smoothTransition(R.layout.view_login, fade);
+
+    /**
+     * Show the log-in layout.
+     */
+    private void showLogIn() {
+        setContentView(R.layout.view_login);
 
         _button = (Button)findViewById(R.id.logInOutButton);
         _emailTextField = (TextView)findViewById(R.id.emailTextField);
@@ -60,13 +72,23 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
         
         setUpToolbar();
     }
-    
+
+    /**
+     * Set-up the Material toolbar to show the back button.
+     */
     private void setUpToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
-    
+
+    /**
+     * Dispatches actions based on which item of the menu was tapped.
+     * @param item      The item that was tapped.
+     * @return  Whether the action was consumed.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -80,31 +102,36 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
         }
         return super.onOptionsItemSelected(item);
     }
-    
-    public void smoothTransition(int id, boolean smooth) {
-        if(smooth) {
-            LayoutInflater inflator = getLayoutInflater();
-            View view = inflator.inflate(id, null);
-            view.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
-            setContentView(view);
-        } else {
-            setContentView(id);
-        }
-    }
-    
+
+    /**
+     * Triggers a sync log-out.
+     * @param sender    The button that triggered the action.
+     */
     public void logOut(View sender) {
         Sync.logOut();
-        showLogIn(true);
+        showLogIn();
     }
-    
+
+    /**
+     * Starts the log-in process.
+     * @param sender    The button that triggered the action.
+     */
     public void logIn(View sender) {
         doRequest(false);
     }
-    
+
+    /**
+     * Starts the sign-up/create accoutn process.
+     * @param sender    The button that triggered the action.
+     */
     public void signUp(View sender) {
         doRequest(true);
     }
-    
+
+    /**
+     * Starts a log-in or sign-up request, using the data input by the user.
+     * @param signup    Whether the user should be signed up or logged in.
+     */
     public void doRequest(boolean signup) {
         Utils.hideSoftKeyboard(this);
         _button.setEnabled(false);
@@ -115,13 +142,18 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
                    this);
     }
 
+    /**
+     * Called when the login/sign-up request returns. If the request is successful, the view is
+     * changed to the logged-in layout.
+     * @param status    The response status.
+     */
     @Override
     public void onSyncResult(Sync.Status status) {
         _progress.dismiss();
         _button.setEnabled(true);
         Model.flushDeleted();
         if(status == Sync.Status.SUCCESS) {
-            showLoggedIn(true);
+            showLoggedIn();
             Sync.refresh();
             Intent i = new Intent(this, PushTokenService.class);
             startService(i);
