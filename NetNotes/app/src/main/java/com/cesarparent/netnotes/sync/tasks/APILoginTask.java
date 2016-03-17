@@ -15,21 +15,34 @@ import org.json.JSONException;
 /**
  * Created by cesar on 04/03/2016.
  * 
+ * APILoginTask is used to send login or sign-up requests to the server in a background thread. 
  */
 public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
 
-    private Sync.ResultCallback _onResult;
-    private String              _email;
-    private boolean             _signup;
+    private Sync.ResultCallback _onResult;  // The callback called when the request finishes.
+    private String              _email;     // Used to store the user's email after doInBackground.
+    private boolean             _signup;    // Whether this is a sign-up of login request.
 
-    public APILoginTask(boolean create, Sync.ResultCallback onResult) {
+
+    /**
+     * Creates a new APILoginTask.
+     * @param signup        Whether this is a sign-up of login request.
+     * @param onResult      A callback that will be called on request return. 
+     */
+    public APILoginTask(boolean signup, Sync.ResultCallback onResult) {
         _onResult = onResult;
-        _signup = create;
+        _signup = signup;
     }
 
+    /**
+     * Sends the login request.
+     * @param params    The login credentials, email + password.
+     * @return  An APIResponse object that represents the server's response.
+     */
     @Override
     protected APIResponse doInBackground(String... params) {
-        // This isn't a user-side error, so assert 2 or GTFO.
+        // This is a programming error, and should never be triggered in deploy.
+        // If there anything else than two parameters, fail.
         if(params.length != 2) {
             Log.e("APILoginTask", "Invalid number of parameters given for Login");
             cancel(true);
@@ -42,10 +55,15 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
         return request.send();
     }
 
+    /**
+     * Dispatches the response's status to the callback, and registers the credentials in
+     * SharedPreferences if the login was successful
+     * @param response  The server's response.
+     */
     @Override
     protected void onPostExecute(APIResponse response) {
         SyncUtils.invalidateSyncDates();
-        Model.flushDeleted();
+        Model.flushDeleted();   // flush the deletes table to prevent deleting data from the server.
         if(response.getStatus() == Sync.Status.SUCCESS) {
             try {
                 String token = response.getBody().getString("token");
@@ -66,7 +84,11 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
             callback(response.getStatus());
         }
     }
-    
+
+    /**
+     * Wraps callback calls in a null-check
+     * @param status    The status to forward to the callback, if it exists.
+     */
     private void callback(Sync.Status status) {
         if(_onResult != null) {
             _onResult.onSyncResult(status);

@@ -24,10 +24,15 @@ import java.util.Random;
  */
 public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
     
-    protected final int ID;
-    private String _endpoint;
-    private Sync.ResultCallback _onResult;
-    
+    protected final int ID;                 // A random number identifying the task.
+    private String _endpoint;               // The API endpoint requested.
+    private Sync.ResultCallback _onResult;  // The result callback.
+
+    /**
+     * Creates a new SyncTask to a given endpoint, with a given callback.
+     * @param endpoint      The API endpoint to request.
+     * @param onResult      The callback to run when the response is received.
+     */
     public SyncTask(String endpoint, Sync.ResultCallback onResult) {
         _endpoint = endpoint;
         _onResult = onResult;
@@ -38,6 +43,10 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
         Log.d("Sync", "Starting Sync Task ID#"+ID);
     }
 
+    /**
+     * Sends the request to the server.
+     * @return  The server response's status.
+     */
     @Override
     protected Sync.Status doInBackground(Void... params) {
         
@@ -50,32 +59,40 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
             return Sync.Status.FAIL_NO_NETWORK;
         }
         
+        // Start the request:
+        // 1. get the transaction ID and fetch changes from the database.
         String transaction = getTransactionID();
-
-        JSONArray changes = getChanges(transaction);
+        JSONArray changes = getChanges();
         if(changes == null) {
             return Sync.Status.SUCCESS;
         }
-
-        // Send the request and get data back
+        
+        // 2. Send the API request. Authorisation is managed by SyncUtils.
         APIRequest req = new APIRequest(_endpoint, transaction);
         req.setAuthtorization(SyncUtils.getAuthToken());
         req.putData(changes);
         final APIResponse res = req.send();
 
-        // If Unauthorised, invalidate credentials
+        // If the request was unauthorised, invalidate the saved credentials
+        // so the user is prompted to log in again.
         if(res.getStatus() == Sync.Status.FAIL_UNAUTHORIZED) {
             SyncUtils.invalidateCredentials();
             SyncUtils.invalidateSyncDates();
         }
+        
+        // If the response isn't successful, don't process the body.
         if(res.getStatus() != Sync.Status.SUCCESS) {
             return res.getStatus();
         }
 
-        // Parse the received JSON
+        // Parse the received JSON and dispatch it.
         return processResponseJSON(res) ? Sync.Status.SUCCESS : Sync.Status.FAIL;
     }
 
+    /**
+     * Processes the status, and starts a in-memory model refresh if the request was succsful.
+     * @param status    The repsonse's status.
+     */
     @Override
     protected void onPostExecute(Sync.Status status) {
         Log.d("Sync", "Finishing Sync Task ID#"+ID);
@@ -88,7 +105,13 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
             _onResult.onSyncResult(status);
         }
     }
-    
+
+    /**
+     * Checks there is a valid changeset sent with the response, and forwards it to the concrete
+     * implementation for processing if there's one.
+     * @param res       The server's response.
+     * @return  true if the response was processed successfully, false otherwise.
+     */
     private boolean processResponseJSON(final APIResponse res) {
         final JSONArray updates = res.getChangeSet();
         if (updates == null) {
@@ -97,11 +120,13 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
         }
         setTransactionID(res.getTransactionID());
         
-        return processResponseData(updates, res.getTransactionID());
+        return processResponseData(updates);
     }
 
-
-
+    /**
+     * Returns the transaction ID based on which endpoint is being requested.
+     * @return  The updates or deletes transaction ID.
+     */
     private String getTransactionID() {
         if(_endpoint.equals(APIRequest.ENDPOINT_NOTES)) {
             return SyncUtils.getUpdateTransactionID();
@@ -110,6 +135,10 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
         }
     }
 
+    /**
+     * Saves a transaction ID for the endpoint being requested.
+     * @param id        The transaction ID for the current endpoint.
+     */
     private void setTransactionID(String id) {
         if(_endpoint.equals(APIRequest.ENDPOINT_NOTES)) {
             SyncUtils.setUpdateTransactionID(id);
@@ -117,10 +146,23 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
             SyncUtils.setDeleteTransactionID(id);
         }
     }
-    
+
+    /**
+     * Called when the server returns anything but success. Override this to implement
+     * behaviours that should be run on fail.
+     */
     protected abstract void onFail();
 
-    protected abstract JSONArray getChanges(String transaction);
+    /**
+     * Returns the changeset that will be sent with the request to the server, as a JSON array.
+     * @return  A JSON Array containing the changes to send to the server.8
+     */
+    protected abstract JSONArray getChanges();
 
-    protected abstract boolean processResponseData(JSONArray data, String transaction);
+    /**
+     * Processes the server response's data.
+     * @param data          The data extracted from the response.
+     * @return  true if the data was processed successfully, false otherwise.
+     */
+    protected abstract boolean processResponseData(JSONArray data);
 }

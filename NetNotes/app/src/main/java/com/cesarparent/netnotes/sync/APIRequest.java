@@ -39,7 +39,6 @@ public class APIRequest {
             _connection.setUseCaches(false);
             _connection.setRequestMethod("POST");
             _connection.setFixedLengthStreamingMode(0);
-            Log.d("APIRequest", "Sync Date: "+transaction);
             _connection.setRequestProperty("X-NetNotes-Transaction", transaction);
             _connection.setRequestProperty("X-NetNotes-DeviceID", CPApplication.getDeviceID());
             _connection.setRequestProperty("Content-Length", "0");
@@ -78,7 +77,7 @@ public class APIRequest {
             os.write(bytes);
         }
         catch(IOException e) {
-            Log.e("APIRequest", "Error writing request body: "+e.getMessage());
+            Log.e("APIRequest", "Error writing request body: " + e.getMessage());
         }
         finally { // This is really ugly. Thanks, Java and your sh***y Exception system.
             try {
@@ -91,21 +90,27 @@ public class APIRequest {
     }
     
     public APIResponse send() {
-        BufferedReader reader = null;
         try {
             _connection.connect();
             int code = _connection.getResponseCode();
             if(code == 200) {
                 String line, json = "";
                 InputStream is = _connection.getInputStream();
-                reader = new BufferedReader(new InputStreamReader(is));
-                while((line = reader.readLine()) != null) {
-                    json += line + "\n";
-                }
                 
-                String transaction = _connection.getHeaderField("X-NetNotes-Transaction");
-                _calculateTimeOffset();
-                return new APIResponse(json, Sync.Status.SUCCESS, transaction);
+                // More try/catch, this time with resources
+                try(BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+                    while((line = reader.readLine()) != null) {
+                        json += line + "\n";
+                    }
+
+                    String transaction = _connection.getHeaderField("X-NetNotes-Transaction");
+                    _calculateTimeOffset();
+                    return new APIResponse(json, Sync.Status.SUCCESS, transaction);
+                }
+                catch(IOException e) {
+                    Log.e("APIRequest", "Error reading server response: " + e.getMessage());
+                    return new APIResponse(Sync.Status.FAIL);
+                }
             }
             else if(code == 401) {
                 return new APIResponse(Sync.Status.FAIL_UNAUTHORIZED);
@@ -123,17 +128,10 @@ public class APIRequest {
         }
         catch(IOException e) {
             Log.e("APIRequest", "Connection Error: "+e.getMessage());
-            e.printStackTrace();
             return new APIResponse(Sync.Status.FAIL_CONNECTION_ERROR);
         }
         finally {
             if(_connection != null) { _connection.disconnect(); }
-            try {
-                if(reader != null) { reader.close(); }
-            }
-            catch(IOException e) {
-                Log.e("APIRequest", "Error closing an output buffer: "+e.getMessage());
-            }
         }
         return new APIResponse(Sync.Status.FAIL);
     }

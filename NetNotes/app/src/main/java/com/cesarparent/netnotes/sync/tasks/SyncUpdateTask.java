@@ -14,19 +14,29 @@ import org.json.JSONException;
 /**
  * Created by cesar on 09/03/2016.
  * 
- * 
+ * Task used to send updated and new notes to the server.
  */
 public class SyncUpdateTask extends SyncTask {
     private static final String SELECT_SQL = "SELECT uniqueID, text, createDate, sortDate " +
                                              "FROM note WHERE seqID < 0";
-    
+
+    /**
+     * Creates a new Update Task.
+     * @param onResult      The callback called when the request finishes.
+     */
     public SyncUpdateTask(Sync.ResultCallback onResult) {
         super(APIRequest.ENDPOINT_NOTES, onResult);
     }
-    
+
+    /**
+     * Fetches the notes that were either created or updated since the last successful request
+     * (marked with seqID = -1 in database) and exports them as JSON.=
+     * @return  A JSONArray of updated and created notes.
+     */
     @Override
-    protected JSONArray getChanges(String transaction) {
+    protected JSONArray getChanges() {
         JSONArray changes = new JSONArray();
+        
         // Try/Catch block with resources, equivalent to try/catch/finally{close()}
         try (Cursor c = DBController.sharedInstance().fetch(SELECT_SQL)) {
             for (int i = 0; i < c.getCount(); ++i) {
@@ -38,19 +48,29 @@ public class SyncUpdateTask extends SyncTask {
             Log.e("SyncUpdateTask", "Error creating request body: "+e.getMessage());
             return null;
         }
-        // Tag the changes
+        // Tag the notes with the task's ID so they can be marked as up-to-date on response.
         DBController.sharedInstance().update("UPDATE note SET seqID = ? WHERE seqID < 0", ID);
         return changes;
     }
-    
+
+    /**
+     * Called on request fail. Resets the notes seqIDs to -1 so they will be caught and sent
+     * to the server by the next request.
+     */
     @Override
     protected void onFail() {
         new DBController.Update("UPDATE note SET seqID = -1 WHERE seqID = ?", null)
                 .executeOnExecutor(DBController.SERIAL_QUEUE, ID);
     }
 
+    /**
+     * Updates the notes database according to the server's response. Marks any note tagged with
+     * this task's ID as up-to-date (seqID = 0).
+     * @param data          The data extracted from the response.
+     * @return  true if the data was processed successfully, false otherwise.
+     */
     @Override
-    protected boolean processResponseData(final JSONArray data, final String transaction) {
+    protected boolean processResponseData(final JSONArray data) {
 
         return DBController.sharedInstance().updateBlock(new DBController.UpdateCallback() {
             @Override
