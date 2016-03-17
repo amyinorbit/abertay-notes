@@ -50,8 +50,7 @@ public class PushTokenService extends IntentService {
                                                null);
             sendToken(token);
             Log.d("PushTokenService", "GCM Token: " + token);
-            NotificationCenter.defaultCenter()
-                              .postNotification(Notification.TOKEN_REGISTRATION_COMPLETE, null);
+            NotificationCenter.postNotification(Notification.TOKEN_REGISTRATION_COMPLETE);
         }
         catch(IOException e) {
             // TODO: To stuff
@@ -95,10 +94,6 @@ public class PushTokenService extends IntentService {
             editor.putBoolean(Authenticator.KEY_PUSH_TOKEN_SENT, true);
             editor.apply();
         }
-    }
-    
-    private void subscribe(String token) throws IOException {
-        GcmPubSub.getInstance(this).subscribe(token, "/topics/global", null);
     }
     
 }

@@ -1,6 +1,8 @@
 package com.cesarparent.netnotes.views;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
+import com.cesarparent.utils.NotificationCenter;
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.NotesAdapter;
@@ -20,7 +24,6 @@ import com.cesarparent.netnotes.push.PushTokenService;
 import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
-import com.cesarparent.utils.NotificationCenter;
 
 /**
  * Created by Cesar Parent on 04/03/2016.
@@ -32,6 +35,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     private NotesAdapter    _adapter = null;            // The adapter used to show the note list.
     SwipeRefreshLayout      _pullToRefresh = null;      // The pull-to-refresh layout coordinator.
     boolean                 _requestPending = false;    // Whether a request is currently running.
+    BroadcastReceiver       _observer = null;           // The ModelChange receiver;
 
     /**
      * Creates the activity.
@@ -45,6 +49,14 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
         setContentView(R.layout.view_root);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        
+        // Create the broadcast receiver;
+        _observer = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                onModelChange();
+            }
+        };
         
         
         // UI widget grabbing extravaganza.
@@ -97,9 +109,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     public void onResume() {
         super.onResume();
         Model.refresh();
-        NotificationCenter.defaultCenter().addObserver(Notification.MODEL_UPDATE,
-                                                       this,
-                                                       "onModelChange");
+        NotificationCenter.registerObserver(Notification.MODEL_UPDATE, _observer);
     }
 
     /**
@@ -108,7 +118,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     @Override
     public void onPause() {
         super.onPause();
-        NotificationCenter.defaultCenter().removeObserver(this);
+        NotificationCenter.removeObserver(_observer);
     }
 
     /**
@@ -126,8 +136,8 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     /**
      * Re-draws the menu. If a request is being ran, disables the refresh button and make it
      * half-transparent.
-     * @param menu
-     * @return
+     * @param menu      The menu to re-draw.
+     * @return  Whether the menu was re-drawn.
      */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -144,7 +154,6 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         switch (item.getItemId()) {
             case R.id.action_settings:
                 openLogin();
@@ -256,7 +265,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     /**
      * Notifies the ListView adapter when the model has changed and the view should show enw data.
      */
-    public void onModelChange(Object notification) {
+    public void onModelChange() {
         _adapter.notifyDataSetChanged();
     }
 

@@ -4,9 +4,9 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.cesarparent.utils.NotificationCenter;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
-import com.cesarparent.utils.NotificationCenter;
 
 import java.util.ArrayList;
 
@@ -132,7 +132,7 @@ public class Model {
                     c.moveToPosition(i);
                     _handles.add(new NoteHandle(c.getString(0), c.getString(1)));
                 }
-                NotificationCenter.defaultCenter().postNotification(Notification.MODEL_UPDATE, null);
+                NotificationCenter.postNotification(Notification.MODEL_UPDATE);
             }
         }).executeOnExecutor(DBController.SERIAL_QUEUE);
     }

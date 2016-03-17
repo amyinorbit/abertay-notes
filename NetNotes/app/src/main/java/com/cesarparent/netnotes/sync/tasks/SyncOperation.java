@@ -52,15 +52,6 @@ public abstract class SyncOperation extends AsyncTask<Void, Void, Sync.Status> {
     @Override
     protected Sync.Status doInBackground(Void... params) {
         
-        // Check that we have an active network, otherwise abort
-        ConnectivityManager cm = (ConnectivityManager)CPApplication
-                .getContext()
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo info = cm.getActiveNetworkInfo();
-        if(info == null || !info.isConnectedOrConnecting()) {
-            return Sync.Status.FAIL_NO_NETWORK;
-        }
-        
         // Start the request:
         // 1. get the transaction ID and fetch changes from the database.
         String transaction = getTransactionID();
@@ -116,7 +107,7 @@ public abstract class SyncOperation extends AsyncTask<Void, Void, Sync.Status> {
      */
     private boolean processResponseJSON(@NonNull final APIResponse res) {
         final JSONArray updates = res.getChangeSet();
-        if (updates == null) {
+        if (updates == null || res.getTransactionID() == null) {
             Log.e("SyncUpdateOperation", "Invalid response payload");
             return false;
         }

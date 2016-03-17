@@ -1,5 +1,8 @@
 package com.cesarparent.netnotes.sync;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -34,7 +37,7 @@ public class APIRequest {
         TOKEN   ("/token");
         
         private String _url;    // The endpoint's URL.
-
+        
         /**
          * Creates an endpoint.
          * @param url   The endpoibt's URL.
@@ -54,6 +57,7 @@ public class APIRequest {
     
     private HttpURLConnection   _connection;    // The connection used to send the request.
     private long                _startTime;     // The UNIX timestamp at which the request was sent.
+    private String              _body;          // The body's data;
 
     /**
      * Creates a new APIRequest.
@@ -68,6 +72,7 @@ public class APIRequest {
             _connection.setDoInput(true);
             _connection.setUseCaches(false);
             _connection.setRequestMethod("POST");
+            _body = null;
             
             // This is needed to prevent sending garbage when there is no request payload.
             _connection.setFixedLengthStreamingMode(0);
@@ -91,32 +96,23 @@ public class APIRequest {
     }
 
     /**
-     * Writes a JSON Object to the request body.
-     * @param body  The JSON request body.
+     * Writes an Object to the request body.
+     * @param body  The request body.
      */
-    public void putData(@NonNull JSONObject body) {
+    public void putData(@NonNull Object body) {
         _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        putData(body.toString());
-        Log.d("APIRequest", "Request Body: " + body.toString());
-    }
-
-    /**
-     * Writes a JSON Array to the request body.
-     * @param body  The JSON request body.
-     */
-    public void putData(@NonNull JSONArray body) {
-        _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        putData(body.toString());
+        _body = body.toString();
         Log.d("APIRequest", "Request Body: " + body.toString());
     }
 
     /**
      * Writes a String to the request body.
-     * @param body  The text request body.
      */
-    private void putData(@NonNull String body) {
+    private void writeData() {
+        if(_body == null) { return; }
+        
         _connection.setDoOutput(true);
-        byte[] bytes = body.getBytes();
+        byte[] bytes = _body.getBytes();
         _connection.setFixedLengthStreamingMode(bytes.length);
 
         OutputStream os = null;
@@ -144,7 +140,18 @@ public class APIRequest {
      */
     @NonNull
     public APIResponse send() {
+        
+        // Check that we have an active network, otherwise abort
+        ConnectivityManager cm = (ConnectivityManager)CPApplication
+                .getContext()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if(info == null || !info.isConnectedOrConnecting()) {
+            return new APIResponse(Sync.Status.FAIL_NO_NETWORK);
+        }
+        
         try {
+            writeData();
             _connection.connect();
             int code = _connection.getResponseCode();
             if(code == 200) {

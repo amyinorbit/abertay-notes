@@ -8,10 +8,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.cesarparent.netnotes.persmission.C2D_MESSAGE"/>
-    <!--
-    TODO: Used for database debugging, remove after
-    -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".CPApplication"
@@ -21,7 +18,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         
-        <!-- GCM shinazzle -->
+        <!-- Network Connectivity Management -->
+        
+        <receiver
+            android:name=".sync.NetworkStatusReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+        
+        <!-- GCM support services -->
         
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"

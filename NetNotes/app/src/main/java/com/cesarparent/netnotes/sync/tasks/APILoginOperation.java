@@ -4,6 +4,8 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.cesarparent.utils.NotificationCenter;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.sync.APIRequest;
 import com.cesarparent.netnotes.sync.APIResponse;
@@ -11,7 +13,6 @@ import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.Utils;
-import com.cesarparent.utils.NotificationCenter;
 import org.json.JSONException;
 
 /**
@@ -67,12 +68,11 @@ public class APILoginOperation extends AsyncTask<String, Void, APIResponse> {
     protected void onPostExecute(@NonNull APIResponse response) {
         Authenticator.invalidateSyncDates();
         Model.flushDeleted();   // flush the deletes table to prevent deleting data from the server.
-        if(response.getStatus() == Sync.Status.SUCCESS) {
+        if(response.getStatus() == Sync.Status.SUCCESS && response.getBody() != null) {
             try {
                 String token = response.getBody().getString("token");
                 Authenticator.setCredentials(_email, token);
-                NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_SUCCESS,
-                                                                    token);
+                NotificationCenter.postNotification(Notification.LOGIN_SUCCESS);
                 callback(Sync.Status.SUCCESS);
             }
             catch(JSONException e) {
@@ -81,8 +81,7 @@ public class APILoginOperation extends AsyncTask<String, Void, APIResponse> {
             }
         } else {
             Authenticator.invalidateCredentials();
-            NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_FAIL,
-                                                                null);
+            NotificationCenter.postNotification(Notification.LOGIN_FAIL);
             Log.e("APILoginOperation", "Failed to log in: " + response.getStatus());
             callback(response.getStatus());
         }
