@@ -4,13 +4,15 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.sync.APIRequest;
 import com.cesarparent.netnotes.sync.APIResponse;
-import com.cesarparent.netnotes.sync.SyncUtils;
+import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 
 import org.json.JSONArray;
@@ -22,18 +24,18 @@ import java.util.Random;
  * 
  * Base class for Asynchronous API synchronisation tasks
  */
-public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
+public abstract class SyncOperation extends AsyncTask<Void, Void, Sync.Status> {
     
     protected final int ID;                 // A random number identifying the task.
-    private String _endpoint;               // The API endpoint requested.
+    private APIRequest.Endpoint _endpoint;  // The API endpoint requested.
     private Sync.ResultCallback _onResult;  // The result callback.
 
     /**
-     * Creates a new SyncTask to a given endpoint, with a given callback.
+     * Creates a new SyncOperation to a given endpoint, with a given callback.
      * @param endpoint      The API endpoint to request.
      * @param onResult      The callback to run when the response is received.
      */
-    public SyncTask(String endpoint, Sync.ResultCallback onResult) {
+    public SyncOperation(APIRequest.Endpoint endpoint, @Nullable Sync.ResultCallback onResult) {
         _endpoint = endpoint;
         _onResult = onResult;
         
@@ -64,20 +66,20 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
         String transaction = getTransactionID();
         JSONArray changes = getChanges();
         if(changes == null) {
-            return Sync.Status.SUCCESS;
+            return Sync.Status.FAIL;
         }
         
-        // 2. Send the API request. Authorisation is managed by SyncUtils.
+        // 2. Send the API request. Authorisation is managed by Authenticator.
         APIRequest req = new APIRequest(_endpoint, transaction);
-        req.setAuthtorization(SyncUtils.getAuthToken());
+        req.setAuthtorization(Authenticator.getAuthToken());
         req.putData(changes);
         final APIResponse res = req.send();
 
         // If the request was unauthorised, invalidate the saved credentials
         // so the user is prompted to log in again.
         if(res.getStatus() == Sync.Status.FAIL_UNAUTHORIZED) {
-            SyncUtils.invalidateCredentials();
-            SyncUtils.invalidateSyncDates();
+            Authenticator.invalidateCredentials();
+            Authenticator.invalidateSyncDates();
         }
         
         // If the response isn't successful, don't process the body.
@@ -95,7 +97,7 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
      */
     @Override
     protected void onPostExecute(Sync.Status status) {
-        Log.d("Sync", "Finishing Sync Task ID#"+ID);
+        Log.d("Sync", "Finishing Sync Operation ID#"+ID);
         if(status == Sync.Status.SUCCESS) {
             Model.refresh();
         } else {
@@ -112,10 +114,10 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
      * @param res       The server's response.
      * @return  true if the response was processed successfully, false otherwise.
      */
-    private boolean processResponseJSON(final APIResponse res) {
+    private boolean processResponseJSON(@NonNull final APIResponse res) {
         final JSONArray updates = res.getChangeSet();
         if (updates == null) {
-            Log.e("SyncUpdateTask", "Invalid response payload");
+            Log.e("SyncUpdateOperation", "Invalid response payload");
             return false;
         }
         setTransactionID(res.getTransactionID());
@@ -127,11 +129,12 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
      * Returns the transaction ID based on which endpoint is being requested.
      * @return  The updates or deletes transaction ID.
      */
+    @NonNull
     private String getTransactionID() {
-        if(_endpoint.equals(APIRequest.ENDPOINT_NOTES)) {
-            return SyncUtils.getUpdateTransactionID();
+        if(_endpoint.equals(APIRequest.Endpoint.NOTES)) {
+            return Authenticator.getUpdateTransactionID();
         } else {
-            return SyncUtils.getDeleteTransactionID();
+            return Authenticator.getDeleteTransactionID();
         }
     }
 
@@ -139,11 +142,11 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
      * Saves a transaction ID for the endpoint being requested.
      * @param id        The transaction ID for the current endpoint.
      */
-    private void setTransactionID(String id) {
-        if(_endpoint.equals(APIRequest.ENDPOINT_NOTES)) {
-            SyncUtils.setUpdateTransactionID(id);
+    private void setTransactionID(@NonNull String id) {
+        if(_endpoint.equals(APIRequest.Endpoint.NOTES)) {
+            Authenticator.setUpdateTransactionID(id);
         } else {
-            SyncUtils.setDeleteTransactionID(id);
+            Authenticator.setDeleteTransactionID(id);
         }
     }
 
@@ -157,6 +160,7 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
      * Returns the changeset that will be sent with the request to the server, as a JSON array.
      * @return  A JSON Array containing the changes to send to the server.8
      */
+    @Nullable
     protected abstract JSONArray getChanges();
 
     /**
@@ -164,5 +168,5 @@ public abstract class SyncTask extends AsyncTask<Void, Void, Sync.Status> {
      * @param data          The data extracted from the response.
      * @return  true if the data was processed successfully, false otherwise.
      */
-    protected abstract boolean processResponseData(JSONArray data);
+    protected abstract boolean processResponseData(@NonNull JSONArray data);
 }

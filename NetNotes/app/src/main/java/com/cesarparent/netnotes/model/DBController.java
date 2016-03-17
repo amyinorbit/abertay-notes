@@ -5,11 +5,13 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 
 import com.cesarparent.netnotes.CPApplication;
-import com.cesarparent.netnotes.sync.SyncUtils;
+import com.cesarparent.netnotes.sync.Authenticator;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -108,7 +110,7 @@ public class DBController extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        SyncUtils.invalidateSyncDates();
+        Authenticator.invalidateSyncDates();
         for(String query : SQL_DROP) {
             db.execSQL(query);
         }
@@ -134,7 +136,7 @@ public class DBController extends SQLiteOpenHelper {
      * @param params    The SQL query's parameters.
      * @return          A Cursor object with the fetch query's results
      */
-    public Cursor fetch(String query, String... params) {
+    public Cursor fetch(@NonNull String query, String... params) {
         synchronized (DB_LOCK) {
             return getReadableDatabase().rawQuery(query, params);
         }
@@ -145,7 +147,7 @@ public class DBController extends SQLiteOpenHelper {
      * @param query     The SQL query.
      * @param params    The SQL query's parameters.
      */
-    public void update(String query, Object... params) {
+    public void update(@NonNull String query, Object... params) {
         synchronized (DB_LOCK) {
             SQLiteDatabase db = getWritableDatabase();
             db.beginTransaction();
@@ -160,7 +162,7 @@ public class DBController extends SQLiteOpenHelper {
      * @param           A UpdateCallback block which is given a valid, writable SQLite database.
      * @return          True if block ran successfully, false otherwise.
      */
-    public boolean updateBlock(UpdateCallback block) {
+    public boolean updateBlock(@NonNull UpdateCallback block) {
         synchronized (DB_LOCK) {
             SQLiteDatabase db = getWritableDatabase();
             db.beginTransaction();
@@ -187,7 +189,7 @@ public class DBController extends SQLiteOpenHelper {
          * @param query     The SQL update query.
          * @param done      The completion callback.
          */
-        public Update(String query, Runnable done) {
+        public Update(@NonNull String query, @Nullable Runnable done) {
             _query = query;
             _done = done;
         }
@@ -225,7 +227,7 @@ public class DBController extends SQLiteOpenHelper {
          * @param query     The SQL update query.
          * @param result    The completion callback.
          */
-        public Fetch(String query, ResultBlock result) {
+        public Fetch(@NonNull String query, @NonNull ResultBlock result) {
             _query = query;
             _result = result;
         }

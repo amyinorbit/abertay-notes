@@ -1,24 +1,18 @@
 package com.cesarparent.utils;
 
 import android.app.Activity;
-import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-
 import com.cesarparent.netnotes.CPApplication;
-
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
-import java.util.SimpleTimeZone;
 import java.util.TimeZone;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 

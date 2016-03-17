@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.push.PushTokenService;
-import com.cesarparent.netnotes.sync.SyncUtils;
+import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Utils;
 
@@ -33,7 +33,7 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        if(SyncUtils.isLoggedIn()) {
+        if(Authenticator.isLoggedIn()) {
             showLoggedIn(false);
         } else {
             showLogIn(false);
@@ -46,7 +46,7 @@ public class LoginViewController extends AppCompatActivity implements Sync.Resul
         _emailTextField = (TextView)findViewById(R.id.emailTextField);
         _button = (Button)findViewById(R.id.logInOutButton);
         _passwordTextField = null;
-        _emailTextField.setText(SyncUtils.getEmail());
+        _emailTextField.setText(Authenticator.getEmail());
         
         setUpToolbar();
     }

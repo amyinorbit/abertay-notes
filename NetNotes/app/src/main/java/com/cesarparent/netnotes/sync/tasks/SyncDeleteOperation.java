@@ -2,6 +2,8 @@ package com.cesarparent.netnotes.sync.tasks;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.cesarparent.netnotes.model.DBController;
 import com.cesarparent.netnotes.sync.APIRequest;
@@ -14,22 +16,23 @@ import org.json.JSONArray;
  * 
  * Task used to send deleted notes to the server.
  */
-public class SyncDeleteTask extends SyncTask {
+public class SyncDeleteOperation extends SyncOperation {
 
     private static final String SELECT_SQL = "SELECT uniqueID FROM deleted WHERE seqID < 0";
 
     /**
-     * Creates a new Delete Task.
+     * Creates a new SyncDeleteOperation.
      * @param onResult      The callback called when the request finishes.
      */
-    public SyncDeleteTask(Sync.ResultCallback onResult) {
-        super(APIRequest.ENDPOINT_DELETE, onResult);
+    public SyncDeleteOperation(@Nullable Sync.ResultCallback onResult) {
+        super(APIRequest.Endpoint.DELETE, onResult);
     }
 
     /**
      * Fetches the IDs of the notes deleted since last transaction.
      * @return  A JSONArray of deleted note IDs.
      */
+    @Nullable
     @Override
     protected JSONArray getChanges() {
         JSONArray changes = new JSONArray();
@@ -39,7 +42,7 @@ public class SyncDeleteTask extends SyncTask {
             changes.put(c.getString(0));
         }
         c.close();
-        // Tag the deletions with the task's ID to make sure no other task sends them to the
+        // Tag the deletions with the operation's ID to make sure no other task sends them to the
         // server.
         DBController.sharedInstance().update("UPDATE deleted SET seqID = ? WHERE seqID < 0", ID);
         return changes;
@@ -57,12 +60,12 @@ public class SyncDeleteTask extends SyncTask {
 
     /**
      * Deletes notes that the server has marked as deleted, and remove any deletedNote that
-     * was tagged with the task's ID from the database.
+     * was tagged with the operation's ID from the database.
      * @param data          The data extracted from the response.
      * @return  true if the data was processed successfully, false otherwise.
      */
     @Override
-    protected boolean processResponseData(final JSONArray data) {
+    protected boolean processResponseData(@NonNull final JSONArray data) {
         return DBController.sharedInstance().updateBlock(new DBController.UpdateCallback() {
             @Override
             public boolean run(SQLiteDatabase db) {
@@ -72,7 +75,7 @@ public class SyncDeleteTask extends SyncTask {
                         db.execSQL("DELETE FROM note WHERE uniqueID = ?",
                                    new Object[]{uniqueID});
                     } catch (Exception e) {
-                        Log.e("SyncUpdateTask", "Error parsing response: " + e.getMessage());
+                        Log.e("SyncUpdateOperation", "Error parsing response: " + e.getMessage());
                         return false;
                     }
                 }

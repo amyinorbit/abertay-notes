@@ -1,11 +1,13 @@
 package com.cesarparent.netnotes.sync.tasks;
 
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.sync.APIRequest;
 import com.cesarparent.netnotes.sync.APIResponse;
-import com.cesarparent.netnotes.sync.SyncUtils;
+import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.Utils;
@@ -15,9 +17,9 @@ import org.json.JSONException;
 /**
  * Created by cesar on 04/03/2016.
  * 
- * APILoginTask is used to send login or sign-up requests to the server in a background thread. 
+ * APILoginOperation is used to send login or sign-up requests to the server in a background thread. 
  */
-public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
+public class APILoginOperation extends AsyncTask<String, Void, APIResponse> {
 
     private Sync.ResultCallback _onResult;  // The callback called when the request finishes.
     private String              _email;     // Used to store the user's email after doInBackground.
@@ -25,11 +27,11 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
 
 
     /**
-     * Creates a new APILoginTask.
+     * Creates a new APILoginOperation.
      * @param signup        Whether this is a sign-up of login request.
      * @param onResult      A callback that will be called on request return. 
      */
-    public APILoginTask(boolean signup, Sync.ResultCallback onResult) {
+    public APILoginOperation(boolean signup, @Nullable Sync.ResultCallback onResult) {
         _onResult = onResult;
         _signup = signup;
     }
@@ -39,18 +41,19 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
      * @param params    The login credentials, email + password.
      * @return  An APIResponse object that represents the server's response.
      */
+    @NonNull
     @Override
     protected APIResponse doInBackground(String... params) {
         // This is a programming error, and should never be triggered in deploy.
         // If there anything else than two parameters, fail.
         if(params.length != 2) {
-            Log.e("APILoginTask", "Invalid number of parameters given for Login");
+            Log.e("APILoginOperation", "Invalid number of parameters given for Login");
             cancel(true);
             System.exit(2);
         }
         _email = params[0];
-        String endpoint = _signup ? APIRequest.ENDPOINT_SIGNUP : APIRequest.ENDPOINT_LOGIN;
-        APIRequest request = new APIRequest(endpoint, "0");
+        APIRequest.Endpoint e = _signup ? APIRequest.Endpoint.SIGNUP : APIRequest.Endpoint.LOGIN;
+        APIRequest request = new APIRequest(e, "0");
         request.setAuthtorization(Utils.HTTPBasicAuth(params[0], params[1]));
         return request.send();
     }
@@ -61,26 +64,26 @@ public class APILoginTask extends AsyncTask<String, Void, APIResponse> {
      * @param response  The server's response.
      */
     @Override
-    protected void onPostExecute(APIResponse response) {
-        SyncUtils.invalidateSyncDates();
+    protected void onPostExecute(@NonNull APIResponse response) {
+        Authenticator.invalidateSyncDates();
         Model.flushDeleted();   // flush the deletes table to prevent deleting data from the server.
         if(response.getStatus() == Sync.Status.SUCCESS) {
             try {
                 String token = response.getBody().getString("token");
-                SyncUtils.setCredentials(_email, token);
+                Authenticator.setCredentials(_email, token);
                 NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_SUCCESS,
                                                                     token);
                 callback(Sync.Status.SUCCESS);
             }
             catch(JSONException e) {
-                Log.e("APILoginTask", "Invalid Response Format");
+                Log.e("APILoginOperation", "Invalid Response Format");
                 callback(Sync.Status.FAIL);
             }
         } else {
-            SyncUtils.invalidateCredentials();
+            Authenticator.invalidateCredentials();
             NotificationCenter.defaultCenter().postNotification(Notification.LOGIN_FAIL,
                                                                 null);
-            Log.e("APILoginTask", "Failed to log in: " + response.getStatus());
+            Log.e("APILoginOperation", "Failed to log in: " + response.getStatus());
             callback(response.getStatus());
         }
     }

@@ -1,5 +1,7 @@
 package com.cesarparent.netnotes.sync;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.R;
@@ -20,17 +22,45 @@ import java.net.URL;
  * Wrapper around  HttpURLConnection that handles requests to the sync server.
  */
 public class APIRequest {
+
+    /**
+     * Defines the valid API endpoints that can be requested.
+     */
+    public enum Endpoint {
+        NOTES   ("/notes"),
+        DELETE  ("/deleted"),
+        LOGIN   ("/login"),
+        SIGNUP  ("/signup"),
+        TOKEN   ("/token");
+        
+        private String _url;    // The endpoint's URL.
+
+        /**
+         * Creates an endpoint.
+         * @param url   The endpoibt's URL.
+         */
+        Endpoint(String url) {
+            _url = url;
+        }
+
+        /**
+         * Returns the string representation for that endpoint.
+         * @return  The string representation for that endpoint.
+         */
+        public String toString() {
+            return _url;
+        }
+    }
     
-    public static final String ENDPOINT_NOTES =     "/notes";
-    public static final String ENDPOINT_DELETE =    "/deleted";
-    public static final String ENDPOINT_LOGIN =     "/login";
-    public static final String ENDPOINT_SIGNUP =    "/signup";
-    public static final String ENDPOINT_TOKEN =     "/token";
-    
-    private HttpURLConnection   _connection;
-    private long                _startTime;
-    
-    public APIRequest(String endpoint, String transaction) {
+    private HttpURLConnection   _connection;    // The connection used to send the request.
+    private long                _startTime;     // The UNIX timestamp at which the request was sent.
+
+    /**
+     * Creates a new APIRequest.
+     * @param endpoint      The API endpoint to send the request to.
+     * @param transaction   The last transaction ID for the requested endpoint.
+     */
+    public APIRequest(Endpoint endpoint, @NonNull String transaction) {
         try {
             URL url = new URL(CPApplication.string(R.string.api_location)+endpoint);
             _connection = (HttpURLConnection)url.openConnection();
@@ -38,6 +68,8 @@ public class APIRequest {
             _connection.setDoInput(true);
             _connection.setUseCaches(false);
             _connection.setRequestMethod("POST");
+            
+            // This is needed to prevent sending garbage when there is no request payload.
             _connection.setFixedLengthStreamingMode(0);
             _connection.setRequestProperty("X-NetNotes-Transaction", transaction);
             _connection.setRequestProperty("X-NetNotes-DeviceID", CPApplication.getDeviceID());
@@ -48,25 +80,41 @@ public class APIRequest {
         }
         _startTime = System.currentTimeMillis();
     }
-    
-    public void setAuthtorization(String token) {
+
+    /**
+     * Sets the request authorization token.
+     * @param token     The request authorization token.
+     */
+    public void setAuthtorization(@Nullable String token) {
+        if(token == null) { return; }
         _connection.setRequestProperty("Authorization", token);
     }
-    
-    public void putData(JSONObject body) {
+
+    /**
+     * Writes a JSON Object to the request body.
+     * @param body  The JSON request body.
+     */
+    public void putData(@NonNull JSONObject body) {
         _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         putData(body.toString());
         Log.d("APIRequest", "Request Body: " + body.toString());
     }
-    
-    
-    public void putData(JSONArray body) {
+
+    /**
+     * Writes a JSON Array to the request body.
+     * @param body  The JSON request body.
+     */
+    public void putData(@NonNull JSONArray body) {
         _connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         putData(body.toString());
         Log.d("APIRequest", "Request Body: " + body.toString());
     }
-    
-    private void putData(String body) {
+
+    /**
+     * Writes a String to the request body.
+     * @param body  The text request body.
+     */
+    private void putData(@NonNull String body) {
         _connection.setDoOutput(true);
         byte[] bytes = body.getBytes();
         _connection.setFixedLengthStreamingMode(bytes.length);
@@ -88,7 +136,13 @@ public class APIRequest {
             }
         }
     }
-    
+
+    /**
+     * Sends the requests to the server and returns the server response. This runs synchronously
+     * and should *never* be called on the UI thread.
+     * @return  The server response.
+     */
+    @NonNull
     public APIResponse send() {
         try {
             _connection.connect();
@@ -127,7 +181,7 @@ public class APIRequest {
             
         }
         catch(IOException e) {
-            Log.e("APIRequest", "Connection Error: "+e.getMessage());
+            Log.e("APIRequest", "Connection Error: " + e.getMessage());
             return new APIResponse(Sync.Status.FAIL_CONNECTION_ERROR);
         }
         finally {
@@ -135,13 +189,18 @@ public class APIRequest {
         }
         return new APIResponse(Sync.Status.FAIL);
     }
-    
+
+    /**
+     * Calculates the time offset between the phone's clock and the server. The server time
+     * is assumed to have been polled request_duration/2 seconds ago.
+     * This is necessary because note merging is clock-dependant on the server side.
+     */
     private void _calculateTimeOffset() {
         // Convert to a millisecond-level timestamp
         long client = (_startTime + System.currentTimeMillis()) / 2;
         long server = Long.parseLong(_connection.getHeaderField("X-NetNotes-Time")) * 1000;
         long offset = server - client;
-        SyncUtils.setTimeOffset(offset);
+        Authenticator.setTimeOffset(offset);
         Log.d("APIRequest", "Calculated time offset: " + offset + "ms");
     }
 }

@@ -1,6 +1,7 @@
 package com.cesarparent.netnotes.model;
 
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.cesarparent.netnotes.sync.Sync;
@@ -46,7 +47,7 @@ public class Model {
      * Deletes a note from the local connection, and trigger a sync to push changes to the server.
      * @param uniqueID  The note's ID.
      */
-    public static void deleteNoteWithUniqueID(String uniqueID) {
+    public static void deleteNoteWithUniqueID(@NonNull String uniqueID) {
         Log.d("Model", "Deleting Note#" + uniqueID);
         
         new DBController.Update("DELETE FROM note WHERE uniqueID = ?", null).execute(uniqueID);
@@ -68,7 +69,8 @@ public class Model {
      * @param uniqueID  The note's ID.
      * @param done      The callback called with the note.
      */
-    public static void getNoteWithUniqueID(String uniqueID, final NoteCompletionBlock done) {
+    public static void getNoteWithUniqueID(@NonNull String uniqueID,
+                                           @NonNull final NoteCompletionBlock done) {
         
         new DBController.Fetch("SELECT uniqueID, text, createDate, sortDate " +
                                        "FROM note WHERE uniqueID = ?", new DBController.ResultBlock() {
@@ -87,7 +89,7 @@ public class Model {
      * Adds a note to the collection.
      * @param note  The note to add to the collection.
      */
-    public static void addNote(final Note note) {
+    public static void addNote(@NonNull final Note note) {
         new DBController.Update("INSERT OR REPLACE INTO note" +
                                 "(uniqueID, text, createDate, sortDate, seqID)" + 
                                 "VALUES (?, ?, ?, ?, ?)", new Runnable() {

@@ -2,6 +2,8 @@ package com.cesarparent.netnotes.sync.tasks;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.cesarparent.netnotes.model.DBController;
 import com.cesarparent.netnotes.model.Note;
@@ -16,23 +18,24 @@ import org.json.JSONException;
  * 
  * Task used to send updated and new notes to the server.
  */
-public class SyncUpdateTask extends SyncTask {
+public class SyncUpdateOperation extends SyncOperation {
     private static final String SELECT_SQL = "SELECT uniqueID, text, createDate, sortDate " +
                                              "FROM note WHERE seqID < 0";
 
     /**
-     * Creates a new Update Task.
+     * Creates a new SyncUpdateOperation.
      * @param onResult      The callback called when the request finishes.
      */
-    public SyncUpdateTask(Sync.ResultCallback onResult) {
-        super(APIRequest.ENDPOINT_NOTES, onResult);
+    public SyncUpdateOperation(@Nullable Sync.ResultCallback onResult) {
+        super(APIRequest.Endpoint.NOTES, onResult);
     }
 
     /**
      * Fetches the notes that were either created or updated since the last successful request
-     * (marked with seqID = -1 in database) and exports them as JSON.=
+     * (marked with seqID = -1 in database) and exports them as JSON.
      * @return  A JSONArray of updated and created notes.
      */
+    @Nullable
     @Override
     protected JSONArray getChanges() {
         JSONArray changes = new JSONArray();
@@ -45,10 +48,10 @@ public class SyncUpdateTask extends SyncTask {
                 changes.put(n.toJSON());
             }
         } catch (JSONException e) {
-            Log.e("SyncUpdateTask", "Error creating request body: "+e.getMessage());
+            Log.e("SyncUpdateOperation", "Error creating request body: "+e.getMessage());
             return null;
         }
-        // Tag the notes with the task's ID so they can be marked as up-to-date on response.
+        // Tag the notes with the operation's ID so they can be marked as up-to-date on response.
         DBController.sharedInstance().update("UPDATE note SET seqID = ? WHERE seqID < 0", ID);
         return changes;
     }
@@ -65,12 +68,12 @@ public class SyncUpdateTask extends SyncTask {
 
     /**
      * Updates the notes database according to the server's response. Marks any note tagged with
-     * this task's ID as up-to-date (seqID = 0).
+     * this operation's ID as up-to-date (seqID = 0).
      * @param data          The data extracted from the response.
      * @return  true if the data was processed successfully, false otherwise.
      */
     @Override
-    protected boolean processResponseData(final JSONArray data) {
+    protected boolean processResponseData(@NonNull final JSONArray data) {
 
         return DBController.sharedInstance().updateBlock(new DBController.UpdateCallback() {
             @Override
@@ -90,7 +93,7 @@ public class SyncUpdateTask extends SyncTask {
                                            0
                                    });
                     } catch (Exception e) {
-                        Log.e("SyncUpdateTask", "Error parsing response: " + e.getMessage());
+                        Log.e("SyncUpdateOperation", "Error parsing response: " + e.getMessage());
                         return false;
                     }
                 }

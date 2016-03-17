@@ -17,7 +17,7 @@ import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.NotesAdapter;
 import com.cesarparent.netnotes.push.PushTokenService;
-import com.cesarparent.netnotes.sync.SyncUtils;
+import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 import com.cesarparent.utils.NotificationCenter;
@@ -26,7 +26,6 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     
     private NotesAdapter    _adapter = null;
     SwipeRefreshLayout      _pullToRefresh = null;
-    MenuItem                _syncMenuItem = null;
     boolean                 _requestPending = false;
 
     @Override
@@ -64,13 +63,13 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(RootViewController.this);
                 builder.setMessage("Delete Note?")
-                       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                       .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                            @Override
                            public void onClick(DialogInterface dialog, int which) {
                                deleteNote(position);
                            }
                        })
-                       .setNegativeButton("No", null).show();
+                       .setNegativeButton(android.R.string.no, null).show();
                 return true;
             }
         });
@@ -142,7 +141,6 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
             message.setAction(R.string.action_login, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    message.dismiss();
                     openLogin();
                 }
             });
@@ -150,7 +148,6 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
             message.setAction(R.string.action_try_again, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    message.dismiss();
                     refresh();
                 }
             });
@@ -201,7 +198,7 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
     }
     
     public void refreshToken() {
-        if(SyncUtils.isTokenSent()) { return; }
+        if(Authenticator.isPushTokenSent()) { return; }
         Intent token = new Intent(this, PushTokenService.class);
         startService(token);
     }

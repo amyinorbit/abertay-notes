@@ -1,6 +1,8 @@
 package com.cesarparent.netnotes.model;
 
-import com.cesarparent.netnotes.sync.SyncUtils;
+import android.support.annotation.NonNull;
+
+import com.cesarparent.netnotes.sync.Authenticator;
 import com.cesarparent.utils.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +32,10 @@ public class Note implements Serializable {
      * @param createDate    The note's creation date.
      * @param sortDate      The note's last-modified date.
      */
-    public Note(String uniqueID, String text, String createDate, String sortDate) {
+    public Note(@NonNull String uniqueID,
+                @NonNull String text,
+                @NonNull String createDate,
+                @NonNull String sortDate) {
         _uniqueID = uniqueID;
         _text = text;
         try {
@@ -38,8 +43,8 @@ public class Note implements Serializable {
             _sortDate = Utils.dateFromJSON(sortDate);
         }
         catch(ParseException e) {
-            _creationDate = SyncUtils.now();
-            _sortDate = SyncUtils.now();
+            _creationDate = Authenticator.now();
+            _sortDate = Authenticator.now();
         }
     }
 
@@ -47,9 +52,9 @@ public class Note implements Serializable {
      * Creates a new Note with given content.
      * @param text          The note's contents.
      */
-    public Note(String text) {
-        _sortDate = SyncUtils.now();
-        _creationDate = SyncUtils.now();
+    public Note(@NonNull String text) {
+        _sortDate = Authenticator.now();
+        _creationDate = Authenticator.now();
         _text = text;
         _uniqueID = UUID.randomUUID().toString();
     }
@@ -67,7 +72,7 @@ public class Note implements Serializable {
      * @throws JSONException    If the JSONObject doesn't contain the right data.
      * @throws ParseException   If a JSON date is of an invalid format.
      */
-    public Note(JSONObject obj) throws JSONException, ParseException {
+    public Note(@NonNull JSONObject obj) throws JSONException, ParseException {
         _text = obj.getString("text");
         _creationDate = Utils.dateFromJSON(obj.getString("createDate"));
         _sortDate = Utils.dateFromJSON(obj.getString("sortDate"));
@@ -78,6 +83,7 @@ public class Note implements Serializable {
      * Returns a string representation of the note for logging.
      * @return  A string representation of the note for logging.
      */
+    @NonNull
     public String toString() {
         return "Note#"+_uniqueID+" { "+_text+" }";
     }
@@ -87,6 +93,7 @@ public class Note implements Serializable {
      * @return  A JSON representation of the note.
      * @throws JSONException
      */
+    @NonNull
     public JSONObject toJSON() throws JSONException {
         JSONObject obj = new JSONObject();
         obj.put("uniqueID", _uniqueID);
@@ -100,6 +107,7 @@ public class Note implements Serializable {
      * Returns a handle pointing to this note.
      * @return  A handle pointing to this note.
      */
+    @NonNull
     public NoteHandle getHandle() {
         return new NoteHandle(_uniqueID, _text);
     }
@@ -108,6 +116,7 @@ public class Note implements Serializable {
      * Returns the note's unique ID.
      * @return  The note's unique ID.
      */
+    @NonNull
     public String uniqueID() {
         return _uniqueID;
     }
@@ -116,6 +125,7 @@ public class Note implements Serializable {
      * Returns the note's creation date as a string.
      * @return  The note's creation date as a string.
      */
+    @NonNull
     public String creationDate() {
         return Utils.JSONDate(_creationDate);
     }
@@ -124,6 +134,7 @@ public class Note implements Serializable {
      * Returns the note's last-modified date as a string.
      * @return  The note's last-modified date as a string.
      */
+    @NonNull
     public String sortDate() {
         return Utils.JSONDate(_sortDate);
     }
@@ -132,6 +143,7 @@ public class Note implements Serializable {
      * Returns the note's contents.
      * @return  The note's contents.
      */
+    @NonNull
     public String text() {
         return _text;
     }
@@ -140,9 +152,9 @@ public class Note implements Serializable {
      * Sets the note's contents, and changes the last-modified date to now.
      * @param text          The note's contents.
      */
-    public void setText(String text) {
+    public void setText(@NonNull String text) {
         _text = text;
-        _sortDate = SyncUtils.now();
+        _sortDate = Authenticator.now();
     }
 
 }

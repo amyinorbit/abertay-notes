@@ -1,5 +1,6 @@
 package com.cesarparent.netnotes.model;
 
+import android.support.annotation.NonNull;
 import com.cesarparent.utils.Utils;
 
 /**
@@ -18,7 +19,7 @@ public class NoteHandle {
      * @param uniqueID  The note's unique ID.
      * @param contents  The note's contents, will be truncated to 128 characters.
      */
-    public NoteHandle(String uniqueID, String contents) {
+    public NoteHandle(@NonNull String uniqueID, @NonNull String contents) {
         this.uniqueID = uniqueID;
         this.title = Utils.safeSubString(contents, 0, 127);
     }

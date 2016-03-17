@@ -1,15 +1,14 @@
 package com.cesarparent.netnotes.sync;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.UiThread;
-import android.util.Log;
+import android.support.annotation.Nullable;
 
 import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.R;
 import com.cesarparent.netnotes.model.Model;
-import com.cesarparent.netnotes.sync.tasks.APILoginTask;
-import com.cesarparent.netnotes.sync.tasks.SyncDeleteTask;
-import com.cesarparent.netnotes.sync.tasks.SyncUpdateTask;
+import com.cesarparent.netnotes.sync.tasks.APILoginOperation;
+import com.cesarparent.netnotes.sync.tasks.SyncDeleteOperation;
+import com.cesarparent.netnotes.sync.tasks.SyncUpdateOperation;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -17,11 +16,13 @@ import java.util.concurrent.Executors;
 /**
  * Created by cesar on 23/02/2016.
  *
- *
+ * Sync provides a simple API to synchronise the local notes database with the server.
  */
 public class Sync {
-    
-    
+
+    /**
+     * Sync.Status is used to communicate the result of a sync operation.
+     */
     public enum Status {
         SUCCESS                 (R.string.status_success),
         FAIL                    (R.string.status_fail),
@@ -33,72 +34,106 @@ public class Sync {
         FAIL_NO_NETWORK         (R.string.status_fail_no_network),
         FAIL_CONNECTION_ERROR   (R.string.status_fail_connection_error);
         
-        private String message;
-        
+        private String message; // The status message.
+
+        /**
+         * Creates a new Status with an Android string resource
+         * @param resID     Android string resource for the status.
+         */
         Status(int resID) {
             message = CPApplication.string(resID);
         }
-        
+
+        /**
+         * Returns a string representation of the status.
+         * @return  A string representation of the status.
+         */
         public String toString() {
             return message;
         }
     }
     
+    /// The Serial queue on which every API task should run.
     private static final Executor SERIAL_QUEUE = Executors.newSingleThreadExecutor();
-    
+
+    /**
+     * Callback lambda function used to pass the results of an asynchronous sync operation.
+     */
     public interface ResultCallback {
         void onSyncResult(Status status);
     }
-    
-    @UiThread
-    public static void logIn(boolean signup, String email, String password, ResultCallback onResult) {
-        APILoginTask task = new APILoginTask(signup, onResult);
+
+    /**
+     * Sends a login request to the synchronisation API server.
+     * @param signup        Whether the operation should create an account or log into one.
+     * @param email         The user's email address.
+     * @param password      The user's password.
+     * @param onResult      Callback called when the operation finishes.
+     */
+    public static void logIn(boolean signup,
+                             @NonNull String email,
+                             @NonNull String password,
+                             @Nullable ResultCallback onResult) {
+        APILoginOperation task = new APILoginOperation(signup, onResult);
         task.executeOnExecutor(SERIAL_QUEUE, email, password);
     }
-    
-    @UiThread
+
+    /**
+     * Logs the user out. Credentials are invalidated, and transaction IDs reset.
+     */
     public static void logOut() {
-        SyncUtils.invalidateCredentials();
-        SyncUtils.invalidateSyncDates();
+        Authenticator.invalidateCredentials();
+        Authenticator.invalidateSyncDates();
         Model.flushDeleted();
     }
-    
-    @UiThread
-    public static void refresh(@NonNull final ResultCallback onResult) {
-        if(!SyncUtils.isLoggedIn()) {
-            onResult.onSyncResult(Status.FAIL_LOGGED_OUT);
+
+    /**
+     * Refreshes the data sequentially (deletes, then updates) and runs a callback when both
+     * operations are finished.
+     * @param onResult       Callback called when the operation finishes.
+     */
+    public static void refresh(@Nullable final ResultCallback onResult) {
+        if(!Authenticator.isLoggedIn()) {
+            if(onResult != null) {
+                onResult.onSyncResult(Status.FAIL_LOGGED_OUT);
+            }
             return;
         }
-        new SyncDeleteTask(new ResultCallback() {
+        new SyncDeleteOperation(new ResultCallback() {
             @Override
             public void onSyncResult(Status status) {
-                Log.d("Sync", "Status: "+status);
                 if(status == Status.SUCCESS) {
-                    new SyncUpdateTask(onResult).executeOnExecutor(SERIAL_QUEUE);
-                } else {
+                    new SyncUpdateOperation(onResult).executeOnExecutor(SERIAL_QUEUE);
+                } else if(onResult != null) {
                     onResult.onSyncResult(status);
                 }
             }
         }).executeOnExecutor(SERIAL_QUEUE);
     }
-    
-    @UiThread
+
+    /**
+     * Refreshes deleted notes.
+     */
     public static void refreshDelete() {
-        if(!SyncUtils.isLoggedIn()) { return; }
-        new SyncDeleteTask(null).executeOnExecutor(SERIAL_QUEUE);
+        if(!Authenticator.isLoggedIn()) { return; }
+        new SyncDeleteOperation(null).executeOnExecutor(SERIAL_QUEUE);
     }
-    
-    @UiThread
+
+    /**
+     * Refreshes updated and created notes.
+     */
     public static void refreshUpdate() {
-        if(!SyncUtils.isLoggedIn()) { return; }
-        new SyncUpdateTask(null).executeOnExecutor(SERIAL_QUEUE);
+        if(!Authenticator.isLoggedIn()) { return; }
+        new SyncUpdateOperation(null).executeOnExecutor(SERIAL_QUEUE);
     }
-    
-    @UiThread
+
+    /**
+     * Refreshes the data silently.
+     */
     public static void refresh() {
-        if(!SyncUtils.isLoggedIn()) { return; }
+        if(!Authenticator.isLoggedIn()) { return; }
         
-        new SyncDeleteTask(null).executeOnExecutor(SERIAL_QUEUE);
-        new SyncUpdateTask(null).executeOnExecutor(SERIAL_QUEUE);
+        new SyncDeleteOperation(null).executeOnExecutor(SERIAL_QUEUE);
+        new SyncUpdateOperation(null).executeOnExecutor(SERIAL_QUEUE);
     }
 }

@@ -7,11 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
-import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.R;
-
-import org.w3c.dom.Text;
 
 /**
  * Created by cesar on 05/03/2016.
