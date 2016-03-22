@@ -58,11 +58,12 @@ EOT;
     
     public static function PrintUser($user) {
         echo "<section id=\"user\">\n";
-        echo "<h1>".$user["email"]." (Unique ID #".$user["uniqueID"].")</h1>\n";
+        echo "<h1>User: ".$user["email"]." (Unique ID #".$user["uniqueID"].")</h1>\n";
         echo "<table>\n";
-        echo "<tr><td>Update Transaction ID</td><td>".$user["updateSeqID"]."</td></tr>\n";
-        echo "<tr><td>Delete Transaction ID</td><td>".$user["deleteSeqID"]."</td></tr>\n";
-         echo "</table>\n";
+
+        echo "<tr><th>ID</th><th>Unique ID</th><th>Update TID</th><th>Delete TID</th></tr>\n";
+        echo "<tr><td>".$user["uniqueID"]."</td><td>".$user["updateSeqID"]."</td><td>".$user["deleteSeqID"]."</td></tr>";
+        echo "</table>\n";
         echo "</section>\n";
     }
     
