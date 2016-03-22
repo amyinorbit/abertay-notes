@@ -14,11 +14,11 @@ class debug {
         margin: 0 auto;
         padding: 2em 5%;
         color: white;
-        background: black;
+        background: white;
     }
     
     * {
-        font-size: 10pt;
+        font-size: 12pt;
         color: black;
         font-family: menlo, courrier, monospace;
     }
@@ -32,7 +32,7 @@ EOT;
     </html>
 EOT;
 
-    public static function Display($req, $res, $id) {
+    public static function a($req, $res, $id) {
         
         ob_start();
         echo self::$header;
