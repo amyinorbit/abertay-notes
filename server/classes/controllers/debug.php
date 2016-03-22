@@ -33,7 +33,7 @@ class debug {
         text-align: left;
     }
     
-    td, th {
+    #notes td, #notes th {
         padding: 1em;
     }
     
