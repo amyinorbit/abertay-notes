@@ -8,8 +8,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import com.cesarparent.netnotes.CPApplication;
 import com.cesarparent.netnotes.R;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -203,6 +201,11 @@ public class APIRequest {
      * This is necessary because note merging is clock-dependant on the server side.
      */
     private void _calculateTimeOffset() {
+        // Check that the server DID return the time.
+        String timeString = _connection.getHeaderField("X-NetNotes-Time");
+        if(timeString == null) {
+            return;
+        }
         // Convert to a millisecond-level timestamp
         long client = (_startTime + System.currentTimeMillis()) / 2;
         long server = Long.parseLong(_connection.getHeaderField("X-NetNotes-Time")) * 1000;
