@@ -10,25 +10,36 @@ error_reporting(0);
 $router = new http\router;
 $auth = new controllers\auth;
 
+function JSONFilter($res) {
+    $res->SetHeader("Content-Type", "application/json");
+    $res->SetHeader("X-NetNotes-Time", strval(time()));
+    $res->SetBody(json_encode($res->Body(), JSON_UNESCAPED_SLASHES));
+    JSONFilter($res);
+}
+
 $router->OnPost("/notes", function($req, $res) {
     if(!controllers\auth::ValidateKey($req, $res)) { return; }
     if(!controllers\sync::Update($req, $res)) { return; }
     controllers\push::PushToDevices("update");
+    JSONFilter($res);
 });
 
 $router->OnPost("/deleted", function($req, $res) {
     if(!controllers\auth::ValidateKey($req, $res)) { return; }
     if(!controllers\sync::Delete($req, $res)) { return; }
     controllers\push::PushToDevices("delete");
+    JSONFilter($res);
 });
 
 $router->OnPost("/token", function($req, $res) {
     if(!controllers\auth::ValidateKey($req, $res)) { return; }
     controllers\push::RegisterToken($req, $res);
+    JSONFilter($res);
 });
 
 $router->OnPost("/signup", function($req, $res) {
     controllers\auth::AddUser($req, $res);
+    JSONFilter($res);
 });
 
 $router->OnPost("/login", function($req, $res) {
@@ -40,6 +51,7 @@ $router->OnPost("/login", function($req, $res) {
         $res->SetStatusCode(200);
         $res->SetBody(["token" => $token]);
     }
+    JSONFilter($res);
 });
 
 
@@ -52,13 +64,6 @@ $server = new http\server(function($req, $res) use($router) {
         $res->SetStatusCode(500);
         $res->SetBody(["error" => $e->getMessage()]);
     }
-});
-
-// Encode every response as JSON
-$server->FilterOut(function($res) {
-    $res->SetHeader("Content-Type", "application/json");
-    $res->SetHeader("X-NetNotes-Time", strval(time()));
-    $res->SetBody(json_encode($res->Body(), JSON_UNESCAPED_SLASHES));
 });
 
 $server->Start();
