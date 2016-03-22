@@ -33,7 +33,7 @@ class debug {
         text-align: left;
     }
     
-    tr:nth-child(odd) {
+    tr:nth-child(even) {
         background: #f5f5f5;
     }
     
@@ -43,6 +43,7 @@ class debug {
     
     #notes tr:first-child {
         margin-bottom: .5em;
+        border-bottom: 1px solid #aaa;
     }
     </style>
     </head>
