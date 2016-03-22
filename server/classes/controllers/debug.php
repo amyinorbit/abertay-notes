@@ -14,13 +14,13 @@ class debug {
         max-width: 1024px;
         margin: 0 auto;
         padding: 2em 5%;
-        color: black;
+        color: #333;
         background: white;
     }
     
     * {
         font-size: 12pt;
-        color: black;
+        color: #333;
         font-family: menlo, courrier, monospace;
     }
     
@@ -31,6 +31,10 @@ class debug {
     table, th, td {
         vertical-align: top;
         text-align: left;
+    }
+    
+    tr:nth-child(odd) {
+        background: #f5f5f5;
     }
     
     #notes td, #notes th {
