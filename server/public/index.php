@@ -42,8 +42,8 @@ $router->OnPost("/login", function($req, $res) {
     }
 });
 
-$router->OnGet("/debug/([0-9]+)", function($id, $req, $res) {
-    $res->SetBody(["id" => $id]);
+$router->OnGet("/debug/([0-9]+)", function($req, $res, $id) {
+    // TODO: output debug data for one user
 });
 
 $server = new http\server(function($req, $res) use($router) {
