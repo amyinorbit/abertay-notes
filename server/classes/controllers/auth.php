@@ -139,6 +139,15 @@ EOT;
     }
     
     /**
+     * Logs the user out of every instance of the application
+     */
+    private static function NukeTokens($userID) {
+        $sql = "DELETE FROM `token` WHERE `userID` = :userID;";
+        $stmt = \app::Connection()->prepare($sql);
+        $stmt->execute(["userID" => $userID]);
+    }
+    
+    /**
      * Sends a 401 Unauthorized response.
      */
     public static function _Unauthorized($res) {

@@ -28,6 +28,10 @@ class debug {
         vertical-align: top;
         text-align: left;
     }
+    
+    th, td {
+        padding: 1em 0;
+    }
     </style>
     </head>
     <body>
@@ -72,7 +76,7 @@ EOT;
         echo "<section id=\"notes\">\n";
         echo "<h1>".$user["email"]."</h1>\n";
         echo "<table>\n";
-        echo "<tr><th>ID</th><th>Contents</th><th>Transaction ID</th></tr>\n";
+        echo "<tr><th>ID</th><th>Contents</th><th>T.ID</th></tr>\n";
         while($note = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             echo "<tr>\n";
             echo "<td>".$note["uniqueID"]."</td>";
