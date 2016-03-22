@@ -34,12 +34,11 @@ class debug {
     }
     
     td, th {
-        padding: .5em;
+        padding: 1em;
     }
     
     #notes tr:first-child {
-        margin-bottom: .2em;
-        border-bottom: 2px dashed black; 
+        margin-bottom: .5em;
     }
     </style>
     </head>
