@@ -29,11 +29,12 @@ class debug {
         text-align: left;
     }
     
-    #notes tr:not(:first-child) {
-        padding: 1em 0;
+    #notes td {
+        padding: .5em;
     }
     
     #notes tr:first-child {
+        margin-bottom: .2em;
         border-bottom: 2px dotted black; 
     }
     </style>
