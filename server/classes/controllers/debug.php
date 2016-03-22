@@ -24,6 +24,10 @@ class debug {
         font-family: menlo, courrier, monospace;
     }
     
+    table {
+        border-collapse: collapse;
+    }
+    
     table, th, td {
         vertical-align: top;
         text-align: left;
