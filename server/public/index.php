@@ -44,6 +44,7 @@ $router->OnPost("/login", function($req, $res) {
 
 $router->OnGet("/debug/([0-9]+)", function($req, $res, $id) {
     // TODO: output debug data for one user
+    controllers\debug::Display($req, $res, $id);
 });
 
 $server = new http\server(function($req, $res) use($router) {
@@ -59,7 +60,7 @@ $server = new http\server(function($req, $res) use($router) {
 
 // Encode every response as JSON
 $server->FilterOut(function($res) {
-    if(!is_array($res) && !is_object($res)) { return; }
+    if(is_string($res)) { return; }
     $res->SetHeader("Content-Type", "application/json");
     $res->SetHeader("X-NetNotes-Time", strval(time()));
     $res->SetBody(json_encode($res->Body(), JSON_UNESCAPED_SLASHES));
