@@ -13,7 +13,7 @@ class debug {
         max-width: 750px;
         margin: 0 auto;
         padding: 2em 5%;
-        color: white;
+        color: black;
         background: white;
     }
     
