@@ -11,7 +11,7 @@ class debug {
     <style type="text/css">
     body {
         width: 90%;
-        max-width: 750px;
+        max-width: 1024px;
         margin: 0 auto;
         padding: 2em 5%;
         color: black;
@@ -22,6 +22,11 @@ class debug {
         font-size: 12pt;
         color: black;
         font-family: menlo, courrier, monospace;
+    }
+    
+    table, th, td {
+        vertical-align: top;
+        text-align: left;
     }
     </style>
     </head>
