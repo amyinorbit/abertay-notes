@@ -159,7 +159,7 @@ public class DBController extends SQLiteOpenHelper {
     /**
      * Runs a Database update block, synchronised and in a transaction. The update block can
      * call any number of updates on the database object it is given.
-     * @param           A UpdateCallback block which is given a valid, writable SQLite database.
+     * @param block     UpdateCallback block which is given a valid, writable SQLite database.
      * @return          True if block ran successfully, false otherwise.
      */
     public boolean updateBlock(@NonNull UpdateCallback block) {

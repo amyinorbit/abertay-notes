@@ -104,15 +104,6 @@ public class Note implements Serializable {
     }
 
     /**
-     * Returns a handle pointing to this note.
-     * @return  A handle pointing to this note.
-     */
-    @NonNull
-    public NoteHandle getHandle() {
-        return new NoteHandle(_uniqueID, _text);
-    }
-
-    /**
      * Returns the note's unique ID.
      * @return  The note's unique ID.
      */

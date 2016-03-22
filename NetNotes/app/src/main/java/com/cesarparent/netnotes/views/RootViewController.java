@@ -97,8 +97,11 @@ public class RootViewController extends AppCompatActivity implements Sync.Result
         });
         
         // Refresh the data and make sure the Push token has been uploaded to the server.
-        refresh();
-        refreshToken();
+        // If not logged in, let's not bother.
+        if(Authenticator.isLoggedIn()) {
+            refresh();
+            refreshToken();
+        }
     }
 
     /**
