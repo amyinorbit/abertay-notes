@@ -33,7 +33,7 @@ class debug {
         text-align: left;
     }
     
-    tr:nth-child(even) {
+    #notes tr:nth-child(even) {
         background: #f5f5f5;
     }
     
