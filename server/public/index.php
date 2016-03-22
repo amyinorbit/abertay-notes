@@ -10,12 +10,6 @@ error_reporting(0);
 $router = new http\router;
 $auth = new controllers\auth;
 
-function JSONFilter($res) {
-    $res->SetHeader("Content-Type", "application/json");
-    $res->SetHeader("X-NetNotes-Time", strval(time()));
-    $res->SetBody(json_encode($res->Body(), JSON_UNESCAPED_SLASHES));
-}
-
 $router->OnPost("/notes", function($req, $res) {
     if(!controllers\auth::ValidateKey($req, $res)) { return; }
     if(!controllers\sync::Update($req, $res)) { return; }
@@ -48,6 +42,9 @@ $router->OnPost("/login", function($req, $res) {
     }
 });
 
+$router->OnGet("/debug/([0-9]+)", function($id, $req, $res) {
+    $res->SetBody(["id" => $id]);
+});
 
 $server = new http\server(function($req, $res) use($router) {
     try {
