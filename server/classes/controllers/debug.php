@@ -32,16 +32,47 @@ EOT;
     </html>
 EOT;
 
-    public static function Display($req, $res, $id) {
+    public static function Display($req, $res, $email) {
+        
+        
         
         ob_start();
         echo self::$header;
         echo "Hello";
         echo self::$footer;
-        $out = ob_get_clean();
         
+        $user = self::GetUser($email);
+        if(is_null($user)) {
+            return self::Finish($res);
+        }
+        self::PrintUser($user);
+        
+        self::Finish($res);
+    }
+    
+    public static function PrintUser($user) {
+        echo "<section id=\"user\">\n";
+        echo "<h1>".$user["email"]."</h1>\n";
+        echo "<table>\n";
+        echo "<tr><td>Update Transaction ID</td><td>".$user["updateSeqID"]."</td></tr>\n";
+        echo "<tr><td>Delete Transaction ID</td><td>".$user["deleteSeqID"]."</td></tr>\n";
+        echo "</section>\n";
+    }
+    
+    public static function PrintNotes($userID) {
+        
+    }
+    
+    public static function Finish($res) {
         $res->SetHeader("Content-Type", "text/html");
+        $out = ob_get_clean();
         $res->SetBody($out);
     }
     
+    private static function GetUser($email) {
+        $stmt = \app::Connection()->prepare("SELECT * FROM `user` WHERE email = :email");
+        $stmt->execute(["email" => $email]);
+        $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return ($user !== false) ? $user : null;
+    }
 }
