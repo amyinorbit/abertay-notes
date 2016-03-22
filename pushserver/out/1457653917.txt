@@ -1,8 +1,0 @@
-POST
-Host: localhost:7000
-Accept: */*
-Authorization: key=AIzaSyDKRI4tJsjKc8sz7pgGZwoFbhnaxWqjyR4
-Content-Type: application/json
-Content-Length: 75
-
-{"registration_ids":["push1","push2","push3"],"data":{"message":"refresh"}}
