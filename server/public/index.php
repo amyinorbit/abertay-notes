@@ -42,7 +42,7 @@ $router->OnPost("/login", function($req, $res) {
     }
 });
 
-$router->OnGet("/debug/([0-9]+)", function($req, $res, $id) {
+$router->OnGet("/debug/([a-zA-Z0-9\.\@-_]+)", function($req, $res, $id) {
     // TODO: output debug data for one user
     controllers\debug::Display($req, $res, $id);
 });

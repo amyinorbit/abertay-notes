@@ -40,8 +40,8 @@ EOT;
         echo self::$footer;
         $out = ob_get_flush();
         
-        $req->SetHeader("Content-Type", "text/html");
-        $req->SetBody($out);
+        $res->SetHeader("Content-Type", "text/html");
+        $res->SetBody($out);
     }
     
 }
