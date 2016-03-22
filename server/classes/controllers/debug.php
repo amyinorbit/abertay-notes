@@ -5,8 +5,9 @@ class debug {
     
     private static $header = <<<EOT
     <!DOCTYPE html>
-    <html>
-    <header>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
     <style type="text/css">
     body {
         width: 90%;
@@ -23,7 +24,7 @@ class debug {
         font-family: menlo, courrier, monospace;
     }
     </style>
-    </header>
+    </head>
     <body>
 EOT;
 
@@ -66,11 +67,12 @@ EOT;
         echo "<section id=\"notes\">\n";
         echo "<h1>".$user["email"]."</h1>\n";
         echo "<table>\n";
-        echo "<tr><th>ID</th><th>Contents</th></tr>\n";
+        echo "<tr><th>ID</th><th>Contents</th><th>Transaction ID</th></tr>\n";
         while($note = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             echo "<tr>\n";
             echo "<td>".$note["uniqueID"]."</td>";
             echo "<td>".$note["text"]."</td>";
+            echo "<td>".$note["seqID"]."</td>";
             echo "</tr>\n";
         }
         echo "</table>\n";
