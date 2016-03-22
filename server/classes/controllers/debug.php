@@ -34,7 +34,7 @@ class debug {
     }
     
     #notes tr:nth-child(even) {
-        background: #f5f5f5;
+        background: #f9f9f9;
     }
     
     #notes td, #notes th {
