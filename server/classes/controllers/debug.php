@@ -32,7 +32,7 @@ EOT;
     </html>
 EOT;
 
-    public static function a($req, $res, $id) {
+    public static function Display($req, $res, $id) {
         
         ob_start();
         echo self::$header;
