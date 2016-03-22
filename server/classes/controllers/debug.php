@@ -38,7 +38,7 @@ EOT;
         echo self::$header;
         echo "Hello";
         echo self::$footer;
-        $out = ob_get_flush();
+        $out = ob_get_clean();
         
         $res->SetHeader("Content-Type", "text/html");
         $res->SetBody($out);
