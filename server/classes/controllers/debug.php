@@ -39,7 +39,7 @@ class debug {
     
     #notes tr:first-child {
         margin-bottom: .2em;
-        border-bottom: 2px dotted black; 
+        border-bottom: 2px dashed black; 
     }
     </style>
     </head>
