@@ -76,7 +76,7 @@ EOT;
     
     public static function PrintNotes($userID) {
         
-        $stmt = \app::Connection()->prepare("SELECT * FROM `note` WHERE userID = :userID");
+        $stmt = \app::Connection()->prepare("SELECT * FROM `note` WHERE userID = :userID ORDER BY `sortDate` DESC");
         if(!$stmt->execute(["userID" => $userID])) {
             return;
         }
