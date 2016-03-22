@@ -9,42 +9,7 @@ class debug {
     <head>
     <meta charset="UTF-8">
     <style type="text/css">
-    body {
-        width: 90%;
-        max-width: 1024px;
-        margin: 0 auto;
-        padding: 2em 5%;
-        color: #333;
-        background: white;
-    }
-    
-    * {
-        font-size: 12pt;
-        color: #333;
-        font-family: menlo, courrier, monospace;
-    }
-    
-    table {
-        border-collapse: collapse;
-    }
-    
-    table, th, td {
-        vertical-align: top;
-        text-align: left;
-    }
-    
-    #notes tr:nth-child(even) {
-        background: #f9f9f9;
-    }
-    
-    #notes td, #notes th {
-        padding: 1em;
-    }
-    
-    #notes tr:first-child {
-        margin-bottom: .5em;
-        border-bottom: 1px solid #aaa;
-    }
+    *,body{color:#333}body{width:90%;max-width:1024px;margin:0 auto;padding:2em 5%;background:#fff}*{font-size:12pt;font-family:menlo,courrier,monospace}table{border-collapse:collapse}table,td,th{vertical-align:top;text-align:left}#notes tr:nth-child(even){background:#f9f9f9}#notes td,#notes th{padding:1em}#notes tr:first-child{margin-bottom:.5em;border-bottom:1px solid #aaa}
     </style>
     </head>
     <body>
