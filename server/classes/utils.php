@@ -3,7 +3,7 @@
  * utils.php - Synchronisation engine utility function.
  * 
  * @version     1.0a1
- * @author      Cesar Parent <cesar@cesarparent.com>
+ * @author      Amy Parent <amy@amyparent.com>
  */
 
 class utils {

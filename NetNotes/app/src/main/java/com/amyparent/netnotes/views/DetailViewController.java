@@ -17,7 +17,7 @@ import com.cesarparent.netnotes.model.Model;
 import com.cesarparent.netnotes.model.Note;
 
 /**
- * Created by Cesar Parent on 04/03/2016.
+ * Created by Amy Parent on 04/03/2016.
  * 
  * View Controller for the note editor/creator.
  */

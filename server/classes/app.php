@@ -3,7 +3,7 @@
  * app.php - App holds the server's options and the database connection
  * 
  * @version     1.0a1
- * @author      Cesar Parent <cesar@cesarparent.com>
+ * @author      Amy Parent <amy@amyparent.com>
  * @package     notes
  */
 

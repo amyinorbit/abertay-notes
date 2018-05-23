@@ -4,7 +4,7 @@
  * http server.
  * 
  * @version     1.0a1
- * @author      Cesar Parent <cesar@cesarparent.com>
+ * @author      Amy Parent <amy@amyparent.com>
  * @package     http
  */
 namespace http;

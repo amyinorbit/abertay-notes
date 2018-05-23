@@ -26,7 +26,7 @@ import com.cesarparent.netnotes.sync.Sync;
 import com.cesarparent.utils.Notification;
 
 /**
- * Created by Cesar Parent on 04/03/2016.
+ * Created by Amy Parent on 04/03/2016.
  *
  * View Controller for the login/create account activity.
  */
